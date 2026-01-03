@@ -1,7 +1,13 @@
-// js/admin-sach.js - FIXED & OPTIMIZED
+// js/admin-sach.js - FIXED IMAGE PATH
 
+// 1. CẤU HÌNH ĐƯỜNG DẪN ẢNH
+// Dựa vào hình folder của bạn, ảnh nằm ở frontend/img
 const IMAGE_BASE_URL = '../../img/'; 
-const DEFAULT_IMAGE_URL = '../../img/VKD.png';
+
+// ⚠️ QUAN TRỌNG: Trong folder của bạn KHÔNG có file VKD.png. 
+// Mình đổi tạm thành '10nguoi.jpg' (có trong hình bạn gửi) để test code không bị lỗi đỏ.
+// Bạn nên copy một file logo vào folder img và đổi tên thành 'default.png' sau nhé.
+const DEFAULT_IMAGE_URL = '../../img/10nguoi.jpg'; 
 
 let allBooksData = []; 
 let g_Authors = {};
@@ -14,8 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadMetadata();
     loadBooks();
 
-    // SỬA LỖI 2: Bỏ logic setTimeout ở đây, chỉ gọi hàm applyFilter
-    // Hàm applyFilter đã tự xử lý debounce (chống spam)
     const searchInput = document.getElementById("searchBook");
     if (searchInput) {
         searchInput.addEventListener("input", applyFilter);
@@ -23,24 +27,32 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // 1. TẢI DỮ LIỆU
+// 1. TẢI DỮ LIỆU (ĐÃ SỬA LỖI TREO LOADING)
 async function loadBooks() {
     try {
+        // Thêm loading indicator nếu cần (tùy chọn)
+        const tableBody = document.getElementById("tableBodySach");
+        if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
+
         const res = await fetch(AppConfig.getUrl('sach'));
         const result = await res.json();
         
-        if (!result.status) return; 
+        // SỬA: Dù status là true hay false, ta vẫn xử lý để không bị treo
+        if (result.status) {
+            allBooksData = result.data || []; // Đảm bảo luôn là mảng
+        } else {
+            console.warn("API trả về false:", result.message);
+            allBooksData = []; // Nếu lỗi thì coi như không có dữ liệu
+        }
 
-        // SỬA LỖI 1: Cập nhật biến toàn cục để dùng cho tìm kiếm
-        allBooksData = result.data; 
-
-        // SỬA LỖI 3: Gọi renderTable thay vì tự vẽ HTML ở đây
-        // Để tận dụng logic chống giật trong hàm renderTable
+        // Luôn gọi renderTable để cập nhật giao diện (xóa chữ Đang tải...)
         renderTable(allBooksData);
         
     } catch (error) {
         console.error("Lỗi tải sách:", error);
         const tableBody = document.getElementById("tableBodySach");
-        if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:red">Lỗi kết nối!</td></tr>`;
+        // Hiển thị lỗi rõ ràng ra màn hình
+        if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:red">❌ Lỗi kết nối: ${error.message}</td></tr>`;
     }
 }
 
@@ -77,20 +89,32 @@ async function loadMetadata() {
     }
 }
 
-// 3. HIỂN THỊ BẢNG (Đã tích hợp Anti-Flickering)
+// 3. HIỂN THỊ BẢNG (ĐÃ SỬA LỖI ĐƯỜNG DẪN ẢNH)
 function renderTable(list) {
     const tableBody = document.getElementById("tableBodySach");
     if (!tableBody) return;
     
-    // Tạo chuỗi HTML mới trong bộ nhớ
     let newHTML = "";
 
     if (list.length === 0) {
         newHTML = `<tr><td colspan="10" style="text-align:center;">Không tìm thấy kết quả</td></tr>`;
     } else {
         list.forEach(item => {
-            let imgSrc = (item.AnhBia && item.AnhBia !== "null") ? item.AnhBia : DEFAULT_IMAGE_URL;
-            if (!imgSrc.startsWith('http') && imgSrc !== DEFAULT_IMAGE_URL) imgSrc = IMAGE_BASE_URL + imgSrc;
+            // --- XỬ LÝ ĐƯỜNG DẪN ẢNH KỸ LƯỠNG ---
+            let imgSrc = DEFAULT_IMAGE_URL; // Mặc định dùng ảnh thay thế trước
+            
+            if (item.AnhBia && item.AnhBia !== "null" && item.AnhBia.trim() !== "") {
+                // Nếu là link online (http...) thì giữ nguyên
+                if (item.AnhBia.startsWith('http')) {
+                    imgSrc = item.AnhBia;
+                } else {
+                    // Nếu là tên file (vd: dacnhantam.jpg), ghép với đường dẫn gốc
+                    // Loại bỏ dấu / ở đầu tên file nếu lỡ có trong DB
+                    let cleanName = item.AnhBia.startsWith('/') ? item.AnhBia.substring(1) : item.AnhBia;
+                    imgSrc = IMAGE_BASE_URL + cleanName;
+                }
+            }
+            // -------------------------------------
 
             const gia = new Intl.NumberFormat('vi-VN').format(item.Gia) + 'đ';
             
@@ -98,7 +122,6 @@ function renderTable(list) {
             if(item.TrangThai == 0) statusBadge = `<span class="status-badge status-cancelled">Ngừng bán</span>`;
             if(item.TrangThai == 2) statusBadge = `<span class="status-badge status-pending">Hết hàng</span>`;
 
-            // Lấy tên từ ID (metadata)
             const tacGia = g_Authors[item.TacGiaID] || '-';
             const theLoai = g_Categories[item.TheLoaiID] || '-';
             const nxb = g_Publishers[item.NhaXuatBanID] || '-';
@@ -107,8 +130,10 @@ function renderTable(list) {
                 <tr>
                     <td>#${item.SachID}</td>
                     <td>
-                        <img src="${imgSrc}" style="width:40px;height:55px;object-fit:cover;border:1px solid #ddd;border-radius:4px;" 
-                             onerror="this.src='${DEFAULT_IMAGE_URL}'">
+                        <img src="${imgSrc}" 
+                             alt="${item.TenSach}"
+                             style="width:40px;height:55px;object-fit:cover;border:1px solid #ddd;border-radius:4px;" 
+                             onerror="this.onerror=null; this.src='${DEFAULT_IMAGE_URL}';">
                     </td>
                     <td style="font-weight:600; white-space:normal;">${item.TenSach}</td>
                     <td>${tacGia}</td>
@@ -130,12 +155,10 @@ function renderTable(list) {
         });
     }
 
-    // LOGIC CHỐNG GIẬT: Chỉ gán lại nếu HTML thực sự thay đổi
     if (tableBody.innerHTML !== newHTML) {
         tableBody.innerHTML = newHTML;
     }
 }
-
 // 4. CHỨC NĂNG TÌM KIẾM (Debounce chuẩn)
 function applyFilter() {
     const searchInput = document.getElementById("searchBook");
