@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu | VKDBookStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="header-new">
+    <div class="top-bar">
+        <div class="container top-bar-inner">
+            <div class="top-left">
+                <span><i class="fa-solid fa-phone"></i> 0707 189 144</span>
+                <span><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</span>
+                <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
+            </div>
+            
+            <div class="top-right">
+                <div id="loginBtn" class="auth-links">
+                    <a href="dangnhap.html">ĐĂNG NHẬP</a>
+                    <span class="sep">|</span>
+                    <a href="dangky.html">ĐĂNG KÝ</a>
+                </div>
+
+                <div id="userInfoContainer" class="user-dropdown-top" style="display:none;">
+                    <div class="user-info-top" id="userInfo">
+                        <i class="fa-regular fa-user"></i> <span id="userName">User</span>
+                    </div>
+                    <div class="user-menu">
+                        <a href="profile.html" class="user-menu-item"><i class="fa-solid fa-user"></i> Tài khoản</a>
+                        <a href="donhang.html" class="user-menu-item"><i class="fa-solid fa-box"></i> Đơn hàng</a>
+                        <a href="#" id="logoutBtn" class="user-menu-item logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-main">
+        <div class="container header-main-inner">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a> 
+            
+            <div class="search-box-custom">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." autocomplete="off">
+                <button class="search-btn-custom" onclick="handleSearch()">
+                    Tìm kiếm
+                </button>
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
+
+            <div class="hotline-box">
+                <div class="icon-phone">
+                    <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <div class="hotline-text">
+                    <span>Tư vấn bán hàng</span>
+                    <strong>0707 189 144</strong>
+                </div>
+            </div>
+
+            <a href="giohang.html" class="cart-tab">
+                <div class="cart-icon-wrap">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="badge" id="cartBadge">0</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <div class="container nav-container">
+        <a href="index.html">TRANG CHỦ</a>
+        <a href="index.html?catId=10">MANGA - TRUYỆN TRANH</a>
+        <a href="index.html?catId=6">TIỂU THUYẾT</a>
+        <a href="index.html?catId=8">SÁCH GIÁO TRÌNH</a>
+        <a href="index.html?catId=7">KINH DỊ</a>
+        <a href="index.html?catId=9">TRINH THÁM</a>
+        <a href="index.html?catId=3">TÂM LINH</a>
+    </div>
+</nav>
+
+<main class="container">
+    <div class="policy-layout">
+        <aside class="policy-sidebar">
+            <div class="policy-menu-header">Danh mục thông tin</div>
+            <div class="policy-menu-list">
+                <a href="gioithieu.html" class="policy-menu-item active">Giới thiệu VKDBOOKSTORE</a>
+                <a href="hethongnhasach.html" class="policy-menu-item">Hệ thống nhà sách</a>
+                <a href="dieukhoan.html" class="policy-menu-item">Điều khoản sử dụng</a>
+                <a href="chinhsachbaomat.html" class="policy-menu-item">Chính sách bảo mật</a>
+            </div>
+        </aside>
+
+        <div class="policy-content">
+            <h1 class="policy-title">Về VKDBOOKSTORE</h1>
+            <div class="policy-body">
+                <p><strong>VKDBOOKSTORE</strong> là dự án tâm huyết được thành lập vào năm 2025 bởi sinh viên Nguyễn Quang Vinh thuộc trường Đại học Công nghệ Sài Gòn (STU). Xuất phát từ niềm đam mê công nghệ và tình yêu với sách, chúng tôi mong muốn xây dựng một cầu nối tri thức hiện đại, tiện lợi.</p>
+                
+                <h3>Sứ mệnh của chúng tôi</h3>
+                <p>Chúng tôi cam kết mang đến những đầu sách chất lượng, bản quyền với giá cả hợp lý nhất cho sinh viên và độc giả trẻ. VKDBOOKSTORE không chỉ bán sách, chúng tôi bán sự trải nghiệm và niềm cảm hứng.</p>
+
+                <h3>Giá trị cốt lõi</h3>
+                <ul>
+                    <li><strong>Uy tín:</strong> Chỉ cung cấp sách thật, nói không với sách lậu.</li>
+                    <li><strong>Tận tâm:</strong> Khách hàng là trung tâm trong mọi suy nghĩ và hành động.</li>
+                    <li><strong>Sáng tạo:</strong> Không ngừng đổi mới công nghệ để phục vụ tốt nhất.</li>
+                </ul>
+                
+                <div style="margin-top:20px; text-align:center;">
+                    <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=1000" alt="Thư viện sách" style="max-width:100%; border-radius:8px;">
+                    <p style="font-size:13px; color:#777; margin-top:5px;">Không gian tri thức tại VKDBOOKSTORE</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <a href="#" class="footer-logo">VKD<span>BOOKSTORE</span></a>
+                <p class="footer-desc">
+                    180 Cao Lỗ, Phường 4, Quận 8, TP.HCM<br>
+                    Công Ty Cổ Phần Phát Hành Sách VKD
+                </p>
+                <ul class="contact-info">
+                    <li><i class="fa-solid fa-location-dot"></i> 180 cao lỗ , Q.8, TP.HCM</li>
+                    <li><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</li>
+                    <li><i class="fa-solid fa-phone"></i> 0707 189 144</li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">DỊCH VỤ</h4>
+                <ul class="footer-links">
+                    <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+                    <li><a href="chinhsachbaomat.html">Chính sách bảo mật thông tin cá nhân</a></li>
+                    <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+                    <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+                </ul>
+            </div>
+
+           <div class="footer-col">
+                <h4 class="footer-heading">HỖ TRỢ</h4>
+                <ul class="footer-links">
+                    <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
+                    <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/DoanHoiSTU" target="_blank" title="Facebook STU">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.youtube.com/c/ĐạihọcCôngNghệSàiGònSTU" target="_blank" title="Youtube STU">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                    <a href="https://www.instagram.com/explore/tags/dhcnsg/" target="_blank" title="Instagram STU">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@dhcnsg" target="_blank" title="Tiktok STU">
+                        <i class="fa-brands fa-tiktok"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="copyright-text">
+                © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín. <br>
+                Giấy chứng nhận Đăng ký Kinh doanh số 0304132047 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp.
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../js/config.js"></script>
+<script src="../js/header-auth.js"></script>
+<script src="../js/cart-badge.js"></script>
+<script src="../js/main.js"></script>
+
+</body>
+</html>

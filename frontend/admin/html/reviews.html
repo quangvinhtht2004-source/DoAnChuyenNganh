@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đánh giá | VKD Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Kho Sách</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html" class="active"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header-button">
+            <h2>Quản lý Đánh giá Khách hàng</h2>
+            </header>
+
+        <div class="filter-bar">
+            <input type="text" id="searchReview" placeholder="Tìm tên sách hoặc người dùng...">
+            
+            <select id="filterStar">
+                <option value="">Tất cả sao</option>
+                <option value="5">5 Sao (Tuyệt vời)</option>
+                <option value="4">4 Sao (Tốt)</option>
+                <option value="3">3 Sao (Bình thường)</option>
+                <option value="2">2 Sao (Tệ)</option>
+                <option value="1">1 Sao (Rất tệ)</option>
+            </select>
+            
+            <button class="btn-reset" onclick="resetFilter()"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 150px;">Khách hàng</th>
+                        <th style="width: 200px;">Sách</th>
+                        <th style="width: 100px;">Đánh giá</th>
+                        <th>Nội dung bình luận</th>
+                        <th style="width: 120px;">Ngày viết</th>
+                        <th style="width: 80px;">Xóa</th>
+                    </tr>
+                </thead>
+                <tbody id="reviewsTable">
+                    <tr><td colspan="7" style="text-align:center; padding: 20px;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-reviews.js"></script>
+</body>
+</html>

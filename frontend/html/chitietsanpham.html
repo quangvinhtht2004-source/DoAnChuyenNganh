@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đang tải chi tiết sách...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    
+    <style>
+        /* Modal Background */
+        .modal {
+            display: none; /* Mặc định ẩn */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            animation: fadeIn 0.3s;
+        }
+
+        /* Modal Content */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; 
+            padding: 25px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+
+        /* Close Button */
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: var(--accent-color, #e74c3c); /* Dùng màu chủ đạo của web */
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Star Rating Form */
+        .star-widget {
+            display: flex;
+            flex-direction: row-reverse; /* Đảo ngược để dùng CSS chọn sao */
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .star-widget input {
+            display: none;
+        }
+
+        .star-widget label {
+            font-size: 30px;
+            color: #ddd;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .star-widget input:not(:checked) ~ label:hover,
+        .star-widget input:not(:checked) ~ label:hover ~ label {
+            color: #fd4;
+        }
+
+        .star-widget input:checked ~ label {
+            color: #fd4;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .btn-submit-review {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color, #e74c3c); /* Fallback màu đỏ nếu biến chưa định nghĩa */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-submit-review:hover {
+            opacity: 0.9;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {opacity: 0} 
+            to {opacity: 1}
+        }
+        @keyframes slideIn {
+            from {transform: translateY(-50px); opacity: 0;} 
+            to {transform: translateY(0); opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+
+<header class="header-new">
+    <div class="top-bar">
+        <div class="container top-bar-inner">
+            <div class="top-left">
+                <span><i class="fa-solid fa-phone"></i> 0707 189 144</span>
+                <span><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</span>
+                <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
+            </div>
+            
+            <div class="top-right">
+                <div id="loginBtn" class="auth-links">
+                    <a href="dangnhap.html">ĐĂNG NHẬP</a>
+                    <span class="sep">|</span>
+                    <a href="dangky.html">ĐĂNG KÝ</a>
+                </div>
+
+                <div id="userInfoContainer" class="user-dropdown-top" style="display:none;">
+                    <div class="user-info-top" id="userInfo">
+                        <i class="fa-regular fa-user"></i> <span id="userName">User</span>
+                    </div>
+                    <div class="user-menu">
+                        <a href="profile.html" class="user-menu-item"><i class="fa-solid fa-user"></i> Tài khoản</a>
+                        <a href="donhang.html" class="user-menu-item"><i class="fa-solid fa-box"></i> Đơn hàng</a>
+                        <a href="#" id="logoutBtn" class="user-menu-item logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-main">
+        <div class="container header-main-inner">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a> 
+            
+            <div class="search-box-custom">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." autocomplete="off">
+                <button class="search-btn-custom" onclick="handleSearch()">
+                    Tìm kiếm
+                </button>
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
+
+            <div class="hotline-box">
+                <div class="icon-phone">
+                    <i class="fa-solid fa-phone-volume"></i>
+                </div>
+                <div class="hotline-text">
+                    <span>Tư vấn bán hàng</span>
+                    <strong>0707 189 144</strong>
+                </div>
+            </div>
+
+            <a href="giohang.html" class="cart-tab">
+                <div class="cart-icon-wrap">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="badge" id="cartBadge">0</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="margin-top: 20px; margin-bottom: 40px;">
+    
+    <div class="breadcrumb">
+        <a href="index.html">Trang chủ</a> 
+        <i class="fa-solid fa-angle-right"></i> 
+        <span id="bc-category">Danh mục</span>
+        <i class="fa-solid fa-angle-right"></i> 
+        <span id="bc-name" style="color: #333; font-weight: 600;">Tên sách</span>
+    </div>
+
+    <div class="product-detail-layout" id="productMainContent">
+        <div style="grid-column: span 2; text-align: center; padding: 50px;">
+            <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color: var(--accent-color);"></i>
+            <p>Đang tải thông tin sách...</p>
+        </div>
+    </div>
+
+    <div class="product-tabs-wrapper">
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="openTab(event, 'tabGioiThieu')">GIỚI THIỆU SÁCH</button>
+            <button class="tab-btn" onclick="openTab(event, 'tabThongTin')">THÔNG TIN CHI TIẾT</button>
+            <button id="btnReviewTab" class="tab-btn" onclick="openTab(event, 'tabDanhGia')">ĐÁNH GIÁ (0)</button>
+        </div>
+
+        <div id="tabGioiThieu" class="tab-content" style="display: block;">
+            <div class="desc-content" id="productDescription">
+                </div>
+        </div>
+
+        <div id="tabThongTin" class="tab-content" style="display: none;">
+            <div id="productSpecs">
+                </div>
+        </div>
+
+        <div id="tabDanhGia" class="tab-content" style="display: none;">
+            <div class="rating-overview-container">
+                <div class="rating-left">
+                    <div class="rating-score">
+                        <span id="avgRatingScore">0</span><span class="max-score">/5</span>
+                    </div>
+                    <div class="rating-stars" id="avgRatingStars">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <div class="rating-count">(<span id="totalReviewCount">0</span> đánh giá)</div>
+                </div>
+                
+                <div class="rating-middle">
+                    <div class="bar-item">
+                        <span>5 sao</span>
+                        <div class="progress-line"><div class="fill" id="bar5" style="width: 0%"></div></div>
+                        <span id="count5">0%</span>
+                    </div>
+                    <div class="bar-item">
+                        <span>4 sao</span>
+                        <div class="progress-line"><div class="fill" id="bar4" style="width: 0%"></div></div>
+                        <span id="count4">0%</span>
+                    </div>
+                    <div class="bar-item">
+                        <span>3 sao</span>
+                        <div class="progress-line"><div class="fill" id="bar3" style="width: 0%"></div></div>
+                        <span id="count3">0%</span>
+                    </div>
+                    <div class="bar-item">
+                        <span>2 sao</span>
+                        <div class="progress-line"><div class="fill" id="bar2" style="width: 0%"></div></div>
+                        <span id="count2">0%</span>
+                    </div>
+                    <div class="bar-item">
+                        <span>1 sao</span>
+                        <div class="progress-line"><div class="fill" id="bar1" style="width: 0%"></div></div>
+                        <span id="count1">0%</span>
+                    </div>
+                </div>
+
+                <div class="rating-right">
+                    <p>Chia sẻ nhận xét của bạn</p>
+                    <button class="btn-write-review" id="btnOpenReviewModal">
+                        <i class="fa-solid fa-pen"></i> Viết đánh giá
+                    </button>
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
+
+            <div id="reviewList" class="review-list">
+                </div>
+        </div>
+    </div>
+
+    <div class="related-section">
+        <div class="section-header-simple">
+            <h2 class="section-title-simple"><i class="fa-solid fa-book-open"></i> Sách cùng thể loại</h2>
+        </div>
+        <div class="product-grid" id="relatedProductsContainer">
+            </div>
+    </div>
+
+</main>
+
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="btnCloseReviewModal">&times;</span>
+        <h3 class="modal-title">Viết đánh giá sản phẩm</h3>
+        
+        <form id="reviewForm">
+            <div class="star-widget">
+                <input type="radio" name="rate" id="rate-5" value="5">
+                <label for="rate-5" class="fas fa-star"></label>
+                
+                <input type="radio" name="rate" id="rate-4" value="4">
+                <label for="rate-4" class="fas fa-star"></label>
+                
+                <input type="radio" name="rate" id="rate-3" value="3">
+                <label for="rate-3" class="fas fa-star"></label>
+                
+                <input type="radio" name="rate" id="rate-2" value="2">
+                <label for="rate-2" class="fas fa-star"></label>
+                
+                <input type="radio" name="rate" id="rate-1" value="1">
+                <label for="rate-1" class="fas fa-star"></label>
+            </div>
+
+            <div class="form-group">
+                <textarea class="form-control" id="reviewContent" rows="5" placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này (chất lượng sách, nội dung, đóng gói...)" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit-review">Gửi đánh giá</button>
+        </form>
+    </div>
+</div>
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <a href="#" class="footer-logo">VKD<span>BOOKSTORE</span></a>
+                <p class="footer-desc">
+                    180 Cao Lỗ, Phường 4, Quận 8, TP.HCM<br>
+                    Công Ty Cổ Phần Phát Hành Sách VKD
+                </p>
+                <ul class="contact-info">
+                    <li><i class="fa-solid fa-location-dot"></i> 180 cao lỗ , Q.8, TP.HCM</li>
+                    <li><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</li>
+                    <li><i class="fa-solid fa-phone"></i> 0707 189 144</li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+    <h4 class="footer-heading">DỊCH VỤ</h4>
+    <ul class="footer-links">
+        <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+        <li><a href="chinhsachbaomat.html">Chính sách bảo mật thông tin cá nhân</a></li>
+        <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+        <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+    </ul>
+</div>
+
+           <div class="footer-col">
+    <h4 class="footer-heading">HỖ TRỢ</h4>
+    <ul class="footer-links">
+        <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
+        <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
+    </ul>
+</div>
+
+            <div class="footer-col">
+                <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/DoanHoiSTU" target="_blank" title="Facebook STU">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    
+                    <a href="https://www.youtube.com/c/ĐạihọcCôngNghệSàiGònSTU" target="_blank" title="Youtube STU">
+                        <i class="fa-brands fa-youtube"></i>
+                    </a>
+                    
+                    <a href="https://www.instagram.com/explore/tags/dhcnsg/" target="_blank" title="Instagram STU">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    
+                    <a href="https://www.tiktok.com/@dhcnsg" target="_blank" title="Tiktok STU">
+                        <i class="fa-brands fa-tiktok"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="copyright-text">
+                © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín. <br>
+                Giấy chứng nhận Đăng ký Kinh doanh số 0304132047 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp.
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="../js/config.js"></script>
+<script src="../js/header-auth.js"></script>
+<script src="../js/cart-badge.js"></script>
+<script src="../js/product-detail.js"></script> 
+
+
+
+</body>
+</html>
