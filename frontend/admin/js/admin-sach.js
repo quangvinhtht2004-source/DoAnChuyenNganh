@@ -1,4 +1,4 @@
-// js/admin-sach.js - OPTIMIZED FOR NO FLICKERING
+// js/admin-sach.js - FIXED & OPTIMIZED
 
 const IMAGE_BASE_URL = '../../img/'; 
 const DEFAULT_IMAGE_URL = '../../img/VKD.png';
@@ -7,14 +7,15 @@ let allBooksData = [];
 let g_Authors = {};
 let g_Categories = {};
 let g_Publishers = {};
-let searchTimeout = null; // Biến dùng cho tính năng tìm kiếm không giật (debounce)
+let searchTimeout = null; 
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 DOM Loaded");
     await loadMetadata();
     loadBooks();
 
-    // Tìm kiếm (đã sửa để không bị lỗi nếu input chưa tồn tại)
+    // SỬA LỖI 2: Bỏ logic setTimeout ở đây, chỉ gọi hàm applyFilter
+    // Hàm applyFilter đã tự xử lý debounce (chống spam)
     const searchInput = document.getElementById("searchBook");
     if (searchInput) {
         searchInput.addEventListener("input", applyFilter);
@@ -23,36 +24,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // 1. TẢI DỮ LIỆU
 async function loadBooks() {
-    const tableBody = document.getElementById("tableBodySach");
-    if (!tableBody) return;
-    
-    // --- KHẮC PHỤC GIẬT MÀN HÌNH ---
-    // Chỉ hiện "Đang tải" nếu bảng đang hoàn toàn trống (lần đầu vào trang).
-    // Nếu đang reload hoặc search, giữ nguyên dữ liệu cũ để người dùng không thấy bảng bị xóa trắng.
-    if (tableBody.children.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
-    }
-
     try {
         const res = await fetch(AppConfig.getUrl('sach'));
-        const data = await res.json();
+        const result = await res.json();
         
-        if (data.status && Array.isArray(data.data)) {
-            allBooksData = data.data;
-            renderTable(allBooksData);
-        } else {
-            tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Không có dữ liệu</td></tr>`;
-        }
-    } catch (err) {
-        console.error(err);
-        // Chỉ hiện lỗi nếu chưa có dữ liệu nào
-        if (tableBody.children.length <= 1) {
-             tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:red;">Lỗi kết nối server</td></tr>`;
-        }
+        if (!result.status) return; 
+
+        // SỬA LỖI 1: Cập nhật biến toàn cục để dùng cho tìm kiếm
+        allBooksData = result.data; 
+
+        // SỬA LỖI 3: Gọi renderTable thay vì tự vẽ HTML ở đây
+        // Để tận dụng logic chống giật trong hàm renderTable
+        renderTable(allBooksData);
+        
+    } catch (error) {
+        console.error("Lỗi tải sách:", error);
+        const tableBody = document.getElementById("tableBodySach");
+        if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:red">Lỗi kết nối!</td></tr>`;
     }
 }
 
-// 2. TẢI DANH MỤC CON (Tác giả, NXB...)
+// 2. TẢI DANH MỤC CON
 async function loadMetadata() {
     try {
         const [resTG, resTL, resNXB] = await Promise.all([
@@ -85,67 +77,76 @@ async function loadMetadata() {
     }
 }
 
-// 3. HIỂN THỊ BẢNG
+// 3. HIỂN THỊ BẢNG (Đã tích hợp Anti-Flickering)
 function renderTable(list) {
     const tableBody = document.getElementById("tableBodySach");
     if (!tableBody) return;
     
+    // Tạo chuỗi HTML mới trong bộ nhớ
+    let newHTML = "";
+
     if (list.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Không tìm thấy kết quả</td></tr>`;
-        return;
+        newHTML = `<tr><td colspan="10" style="text-align:center;">Không tìm thấy kết quả</td></tr>`;
+    } else {
+        list.forEach(item => {
+            let imgSrc = (item.AnhBia && item.AnhBia !== "null") ? item.AnhBia : DEFAULT_IMAGE_URL;
+            if (!imgSrc.startsWith('http') && imgSrc !== DEFAULT_IMAGE_URL) imgSrc = IMAGE_BASE_URL + imgSrc;
+
+            const gia = new Intl.NumberFormat('vi-VN').format(item.Gia) + 'đ';
+            
+            let statusBadge = `<span class="status-badge status-completed">Đang bán</span>`;
+            if(item.TrangThai == 0) statusBadge = `<span class="status-badge status-cancelled">Ngừng bán</span>`;
+            if(item.TrangThai == 2) statusBadge = `<span class="status-badge status-pending">Hết hàng</span>`;
+
+            // Lấy tên từ ID (metadata)
+            const tacGia = g_Authors[item.TacGiaID] || '-';
+            const theLoai = g_Categories[item.TheLoaiID] || '-';
+            const nxb = g_Publishers[item.NhaXuatBanID] || '-';
+
+            newHTML += `
+                <tr>
+                    <td>#${item.SachID}</td>
+                    <td>
+                        <img src="${imgSrc}" style="width:40px;height:55px;object-fit:cover;border:1px solid #ddd;border-radius:4px;" 
+                             onerror="this.src='${DEFAULT_IMAGE_URL}'">
+                    </td>
+                    <td style="font-weight:600; white-space:normal;">${item.TenSach}</td>
+                    <td>${tacGia}</td>
+                    <td>${theLoai}</td>
+                    <td>${nxb}</td>
+                    <td style="color:#d63031;font-weight:bold;">${gia}</td>
+                    <td style="text-align:center;">${item.SoLuong}</td>
+                    <td style="text-align:center;">${statusBadge}</td>
+                    <td class="action-col">
+                        <button class="btn-icon btn-edit" onclick="openModalSach(${item.SachID})">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn-icon btn-delete" onclick="deleteBook(${item.SachID})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
     }
 
-    let html = "";
-    list.forEach(item => {
-        let imgSrc = (item.AnhBia && item.AnhBia !== "null") ? item.AnhBia : DEFAULT_IMAGE_URL;
-        if (!imgSrc.startsWith('http') && imgSrc !== DEFAULT_IMAGE_URL) imgSrc = IMAGE_BASE_URL + imgSrc;
-
-        const gia = new Intl.NumberFormat('vi-VN').format(item.Gia) + 'đ';
-        
-        // Badge trạng thái
-        let statusBadge = `<span class="status-badge status-completed">Đang bán</span>`;
-        if(item.TrangThai == 0) statusBadge = `<span class="status-badge status-cancelled">Ngừng bán</span>`;
-        if(item.TrangThai == 2) statusBadge = `<span class="status-badge status-pending">Hết hàng</span>`;
-
-        html += `
-            <tr>
-                <td>#${item.SachID}</td>
-                <td>
-                    <img src="${imgSrc}" style="width:40px;height:55px;object-fit:cover;border:1px solid #ddd;border-radius:4px;" 
-                         onerror="this.src='${DEFAULT_IMAGE_URL}'">
-                </td>
-                <td style="font-weight:600; white-space:normal;">${item.TenSach}</td>
-                <td>${g_Authors[item.TacGiaID] || '-'}</td>
-                <td>${g_Categories[item.TheLoaiID] || '-'}</td>
-                <td>${g_Publishers[item.NhaXuatBanID] || '-'}</td>
-                <td style="color:#d63031;font-weight:bold;">${gia}</td>
-                <td style="text-align:center;">${item.SoLuong}</td>
-                <td style="text-align:center;">${statusBadge}</td>
-                <td class="action-col">
-                    <button class="btn-icon btn-edit" onclick="openModalSach(${item.SachID})">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    <button class="btn-icon btn-delete" onclick="deleteBook(${item.SachID})">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
-    tableBody.innerHTML = html;
+    // LOGIC CHỐNG GIẬT: Chỉ gán lại nếu HTML thực sự thay đổi
+    if (tableBody.innerHTML !== newHTML) {
+        tableBody.innerHTML = newHTML;
+    }
 }
 
-// 4. CHỨC NĂNG TÌM KIẾM (Đã thêm Debounce để không giật lag)
+// 4. CHỨC NĂNG TÌM KIẾM (Debounce chuẩn)
 function applyFilter() {
     const searchInput = document.getElementById("searchBook");
     if (!searchInput) return;
 
     const keyword = searchInput.value.toLowerCase().trim();
 
-    // Xóa lệnh cũ nếu người dùng gõ tiếp chưa quá 300ms
+    // Hủy lệnh cũ
     clearTimeout(searchTimeout);
 
-    // Đợi 300ms sau khi ngừng gõ mới render lại bảng
+    // Đợi 300ms sau khi ngừng gõ
     searchTimeout = setTimeout(() => {
         if (!keyword) {
             renderTable(allBooksData);
@@ -161,23 +162,21 @@ function applyFilter() {
     }, 300);
 }
 
-// 5. MỞ MODAL (THÊM / SỬA)
+// 5. MỞ MODAL (GIỮ NGUYÊN)
 window.openModalSach = function(sachId = null) {
     const modal = document.getElementById('editModalSach');
     const form = document.getElementById('formSach');
     
     if(!modal || !form) return;
 
-    form.reset(); // Xóa trắng form
+    form.reset(); 
     
-    // Ẩn ảnh cũ để tránh nháy ảnh
     const imgPreview = document.getElementById('previewMain').querySelector('img');
     const imgPlace = document.getElementById('previewMain').querySelector('.img-placeholder');
-    if(imgPreview) imgPreview.style.display = 'none';
+    if(imgPreview) { imgPreview.src=""; imgPreview.style.display = 'none'; }
     if(imgPlace) imgPlace.style.display = 'block';
 
     if (sachId) {
-        // --- CHẾ ĐỘ SỬA ---
         const item = allBooksData.find(b => b.SachID == sachId);
         if(!item) return;
 
@@ -201,7 +200,6 @@ window.openModalSach = function(sachId = null) {
         }
 
     } else {
-        // --- CHẾ ĐỘ THÊM ---
         document.getElementById('modalTitleSach').innerText = "Thêm sách mới";
         form.querySelector('[name="SachID"]').value = "";
     }
@@ -209,7 +207,7 @@ window.openModalSach = function(sachId = null) {
     modal.classList.add('show'); 
 }
 
-// 6. LƯU DỮ LIỆU
+// 6. LƯU DỮ LIỆU (GIỮ NGUYÊN)
 window.saveDataSach = async function() {
     const form = document.getElementById('formSach');
     if (!form.checkValidity()) {
@@ -259,7 +257,7 @@ window.saveDataSach = async function() {
     }
 }
 
-// 7. XÓA SÁCH
+// 7. XÓA SÁCH (GIỮ NGUYÊN)
 window.deleteBook = async function(id) {
     if (!confirm("Bạn có chắc muốn xóa sách này?")) return;
     
@@ -282,7 +280,7 @@ window.deleteBook = async function(id) {
     }
 }
 
-// HELPER
+// HELPER (GIỮ NGUYÊN)
 window.closeModal = function(id) {
     const m = document.getElementById(id);
     if(m) m.classList.remove('show');
@@ -299,6 +297,12 @@ window.previewImage = function(val, targetId) {
         img.src = val;
         img.style.display = 'block';
         ph.style.display = 'none';
+        
+        // Thêm xử lý lỗi ảnh
+        img.onerror = function() {
+            img.style.display = 'none';
+            ph.style.display = 'block';
+        };
     } else {
         img.style.display = 'none';
         ph.style.display = 'block';
