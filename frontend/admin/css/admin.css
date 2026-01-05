@@ -1,1150 +1,1273 @@
 /* ==========================================================================
-   1. VARIABLES & RESET (Cấu hình màu sắc & font chuẩn Clean UI)
+   1. VARIABLES & RESET (Cập nhật theo style.css)
    ========================================================================== */
 :root {
-    /* --- MÀU CHỦ ĐẠO (Indigo Modern) --- */
-    --primary-color: #4F46E5;
-    --primary-hover: #4338CA;
-    --primary-light: #EEF2FF;
+  /* --- MÀU CHỦ ĐẠO (Xanh Navy - Brand Identity) --- */
+  --primary-color: #102A56; 
+  --primary-hover: #0c2144;
+  --primary-light: #E8EBF2; /* Màu nền nhạt pha từ Navy */
 
-    /* --- MÀU TRẠNG THÁI (Pastel) --- */
-    --success-bg: #DCFCE7;
-    --success-text: #166534;
-    
-    --warning-bg: #FEF9C3;
-    --warning-text: #854D0E;
-    
-    --danger-bg: #FEE2E2;
-    --danger-text: #991B1B;
-    
-    --info-bg: #DBEAFE;
-    --info-text: #1E40AF;
+  /* --- MÀU ĐIỂM NHẤN (Cam - Action Buttons) --- */
+  --accent-color: #FF6600;
+  --accent-hover: #E65C00;
 
-    /* --- MÀU NỀN & CHỮ --- */
-    --bg-body: #F3F4F6;
-    --bg-card: #FFFFFF;
-    --text-dark: #111827;
-    --text-gray: #6B7280;
-    --border-color: #E5E7EB;
+  /* --- MÀU TRẠNG THÁI (Pastel) --- */
+  --success-bg: #DCFCE7;
+  --success-text: #166534;
 
-    /* --- KÍCH THƯỚC & HIỆU ỨNG --- */
-    --sidebar-width: 260px;
-    --header-height: 70px;
-    --radius: 12px;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --transition: all 0.2s ease-in-out;
+  --warning-bg: #FEF9C3;
+  --warning-text: #854D0E;
+
+  --danger-bg: #FEE2E2;
+  --danger-text: #991B1B;
+
+  --info-bg: #DBEAFE;
+  --info-text: #1E40AF;
+
+  /* --- MÀU NỀN & CHỮ --- */
+  --bg-body: #F3F4F6;
+  --bg-card: #FFFFFF;
+  --text-dark: #111827;
+  --text-gray: #6B7280;
+  --border-color: #E5E7EB;
+
+  /* --- KÍCH THƯỚC & HIỆU ỨNG --- */
+  --sidebar-width: 260px;
+  --header-height: 70px;
+  --radius: 12px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --transition: all 0.2s ease-in-out;
 }
 
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-body);
-    color: var(--text-dark);
-    font-size: 14px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-dark);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-    text-decoration: none;
-    color: inherit;
-    transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+  transition: var(--transition);
 }
 
 ul {
-    list-style: none;
+  list-style: none;
 }
 
 button {
-    cursor: pointer;
-    font-family: inherit;
-    border: none;
-    outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
 }
 
 img {
-    max-width: 100%;
-    display: block;
+  max-width: 100%;
+  display: block;
 }
 
 /* ==========================================================================
-   2. SIDEBAR (Menu bên trái)
+   2. SIDEBAR 
    ========================================================================== */
 .sidebar {
-    width: var(--sidebar-width);
-    background: var(--bg-card);
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    border-right: 1px solid var(--border-color);
-    z-index: 100;
-    overflow-y: auto;
-    transition: var(--transition);
+  width: var(--sidebar-width);
+  background: var(--primary-color); /* Đổi nền sang màu Xanh Navy chủ đạo */
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1); /* Viền phải mờ nhẹ */
+  z-index: 100;
+  overflow-y: auto;
+  transition: var(--transition);
+  color: #ffffff; /* Màu chữ mặc định là trắng */
 }
 
+/* Header của Sidebar (Logo VKD Admin) */
 .sidebar-header {
-    height: var(--header-height);
-    display: flex;
-    align-items: center;
-    padding-left: 24px;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--primary-color);
-    border-bottom: 1px solid var(--border-color);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffffff; /* Chữ Logo màu trắng */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Đường kẻ mờ */
+  letter-spacing: -0.5px;
 }
 
 .sidebar-menu {
-    padding: 20px 16px;
+  padding: 20px 16px;
 }
 
+/* Tiêu đề nhóm (BÁN HÀNG, KHO SÁCH...) */
 .menu-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-gray);
-    margin: 24px 0 10px 12px;
-    letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5); /* Màu trắng mờ cho tiêu đề phụ */
+  margin: 24px 0 10px 12px;
+  letter-spacing: 0.5px;
 }
 
+/* Link Menu */
 .sidebar-menu li a {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    color: var(--text-gray);
-    font-weight: 500;
-    border-radius: 8px;
-    transition: var(--transition);
-    margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  color: rgba(255, 255, 255, 0.8); /* Chữ menu màu trắng hơi xám */
+  font-weight: 500;
+  border-radius: 8px;
+  transition: var(--transition);
+  margin-bottom: 4px;
 }
 
+/* Icon Menu */
 .sidebar-menu li a i {
-    width: 24px;
-    font-size: 16px;
-    margin-right: 12px;
-    text-align: center;
-    color: #9CA3AF;
-    transition: var(--transition);
+  width: 24px;
+  font-size: 16px;
+  margin-right: 12px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8); /* Icon cùng màu chữ */
+  transition: var(--transition);
 }
 
+/* Hover Menu */
 .sidebar-menu li a:hover {
-    background-color: var(--bg-body);
-    color: var(--text-dark);
+  background-color: rgba(255, 255, 255, 0.1); /* Nền trắng mờ khi di chuột */
+  color: #ffffff; /* Chữ sáng lên */
 }
 
 .sidebar-menu li a:hover i {
-    color: var(--text-dark);
+  color: #ffffff;
 }
 
+/* Active Menu (Mục đang chọn) */
 .sidebar-menu li a.active {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-    font-weight: 600;
+  background-color: var(--accent-color); /* Nền màu Cam điểm nhấn */
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-menu li a.active i {
-    color: var(--primary-color);
+  color: #ffffff;
+}
+
+/* Nút Đăng xuất ở dưới cùng */
+.sidebar-menu li a.text-danger {
+    color: #ffffff !important;
+}
+
+/* Đảm bảo icon bên trong cũng màu trắng */
+.sidebar-menu li a.text-danger i {
+    color: #ffffff !important; 
+}
+
+/* Khi di chuột vào: Nền đỏ cảnh báo, chữ vẫn trắng */
+.sidebar-menu li a.text-danger:hover {
+    background: rgba(220, 38, 38, 0.8); 
+    color: #ffffff !important;
 }
 
 /* ==========================================================================
-   3. MAIN CONTENT (Nội dung chính)
+   3. MAIN CONTENT
    ========================================================================== */
 .main-content {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    padding: 30px;
-    min-height: 100vh;
-    /* transition: var(--transition); -> ĐÃ XÓA ĐỂ TRÁNH GIẬT MÀN HÌNH */
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  padding: 30px;
+  min-height: 100vh;
 }
 
 /* Header chung cho các trang con */
 .page-header-button {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .page-header-button h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-dark);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color); /* Đổi tiêu đề sang Navy */
 }
 
-/* Buttons & Filters */
+/* ==========================================================================
+   4. GENERAL UI (Buttons & Filters)
+   ========================================================================== */
+/* Nút Thêm mới - Dùng màu CAM (Accent) cho nổi bật */
 .btn-add {
-    background: var(--primary-color);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: var(--shadow-sm);
+  background: var(--accent-color);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: 0.2s;
 }
 
 .btn-add:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
+  background: var(--accent-hover);
+  transform: translateY(-1px);
 }
 
 .filter-bar {
-    background: var(--bg-card);
-    padding: 16px;
-    border-radius: var(--radius);
-    margin-bottom: 24px;
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  padding: 16px;
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .filter-bar input,
 .filter-bar select {
-    padding: 9px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    outline: none;
-    min-width: 200px;
-    font-size: 14px;
-    color: var(--text-dark);
+  padding: 9px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  outline: none;
+  min-width: 200px;
+  font-size: 14px;
+  color: var(--text-dark);
 }
 
 .filter-bar input:focus,
 .filter-bar select:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px var(--primary-light);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 .btn-reset {
-    background: #F3F4F6;
-    border: 1px solid var(--border-color);
-    width: 40px;
-    height: 38px;
-    border-radius: 6px;
-    color: var(--text-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background: #F3F4F6;
+  border: 1px solid var(--border-color);
+  width: 40px;
+  height: 38px;
+  border-radius: 6px;
+  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-reset:hover {
-    background: white;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+  background: white;
+  color: var(--accent-color); /* Hover màu cam */
+  border-color: var(--accent-color);
 }
 
 /* ==========================================================================
-   4. DASHBOARD - HEADER & TOP CARDS
+   5. DASHBOARD - HEADER & TOP CARDS
    ========================================================================== */
 .dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 30px;
 }
 
 .welcome-text h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 4px;
 }
 
 .welcome-text p {
-    color: var(--text-gray);
-    font-size: 14px;
+  color: var(--text-gray);
+  font-size: 14px;
 }
 
 .user-profile-badge {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--bg-card);
-    padding: 8px 16px 8px 20px;
-    border-radius: 50px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  padding: 8px 16px 8px 20px;
+  border-radius: 50px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar-circle {
-    width: 36px;
-    height: 36px;
-    background: var(--primary-light);
-    color: var(--primary-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+  width: 36px;
+  height: 36px;
+  background: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
-/* --- Stats Cards (4 ô trên cùng) --- */
+/* Stats Cards */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 30px;
 }
 
 .stat-card {
-    background: var(--bg-card);
-    padding: 24px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
 .stat-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-color);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-color); /* Hover viền màu cam */
 }
 
 .stat-card::after {
-    content: '\f061'; /* FontAwesome arrow-right */
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    opacity: 0;
-    transition: all 0.2s;
-    color: var(--text-gray);
+  content: '\f061';
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  opacity: 0;
+  transition: all 0.2s;
+  color: var(--accent-color);
 }
 
 .stat-card:hover::after {
-    opacity: 1;
-    right: 15px;
+  opacity: 1;
+  right: 15px;
 }
 
 .stat-info h3 {
-    font-size: 13px;
-    color: var(--text-gray);
-    font-weight: 600;
-    margin-bottom: 8px;
-    text-transform: uppercase;
+  font-size: 13px;
+  color: var(--text-gray);
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 .stat-num {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text-dark);
-    letter-spacing: -0.5px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: -0.5px;
 }
 
 .stat-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: #f9fafb;
+  color: var(--primary-color);
 }
 
 /* ==========================================================================
-   5. DASHBOARD - ANALYTICS & RANKING
+   6. DASHBOARD - ANALYTICS & RANKING
    ========================================================================== */
 .charts-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 24px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 30px;
 }
 
 .chart-box {
-    background: var(--bg-card);
-    padding: 24px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
+  background: var(--bg-card);
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 .card-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .card-header-row h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-dark);
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
 .filter-tabs {
-    background: #F3F4F6;
-    padding: 4px;
-    border-radius: 8px;
-    display: flex;
-    gap: 4px;
+  background: #F3F4F6;
+  padding: 4px;
+  border-radius: 8px;
+  display: flex;
+  gap: 4px;
 }
 
 .filter-tabs span {
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-gray);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-gray);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .filter-tabs span:hover {
-    background: rgba(255, 255, 255, 0.6);
-    color: var(--text-dark);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--primary-color);
 }
 
 .filter-tabs span.active {
-    background: white;
-    color: var(--text-dark);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  background: white;
+  color: var(--primary-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-weight: 700;
 }
 
-/* --- STAT LIST --- */
+/* Stat List */
 .stat-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .stat-row {
-    display: flex;
-    align-items: center;
-    padding: 12px;
-    border-radius: 12px;
-    transition: var(--transition);
-    border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  transition: var(--transition);
+  border: 1px solid transparent;
 }
 
 .stat-row:hover {
-    background: #F9FAFB;
-    border-color: var(--border-color);
-    transform: translateX(4px);
+  background: #F9FAFB;
+  border-color: var(--border-color);
+  transform: translateX(4px);
 }
 
 .stat-icon-wrapper {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    margin-right: 16px;
-    flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-right: 16px;
+  flex-shrink: 0;
+  color: var(--primary-color);
+  background: var(--primary-light);
 }
 
 .stat-details {
-    flex: 1;
+  flex: 1;
 }
 
 .stat-label {
-    display: block;
-    font-weight: 600;
-    color: var(--text-dark);
-    font-size: 14px;
+  display: block;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 14px;
 }
 
 .stat-sub {
-    font-size: 12px;
-    color: var(--text-gray);
-    margin-top: 2px;
-    display: block;
+  font-size: 12px;
+  color: var(--text-gray);
+  margin-top: 2px;
+  display: block;
 }
 
 .stat-values {
-    text-align: right;
+  text-align: right;
 }
 
 .money-value {
-    display: block;
-    font-weight: 700;
-    color: var(--text-dark);
-    font-size: 15px;
-    letter-spacing: -0.02em;
+  display: block;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 15px;
+  letter-spacing: -0.02em;
 }
 
 .percent-change {
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .percent-change.up {
-    color: var(--success-text);
+  color: var(--success-text);
 }
 
 .percent-change.down {
-    color: var(--danger-text);
+  color: var(--danger-text);
 }
 
-/* --- BOOK RANKING --- */
+/* Book Ranking */
 .book-ranking-list {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .book-item {
-    display: flex;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--border-color);
 }
 
 .book-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .rank-badge {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #F3F4F6;
-    color: var(--text-gray);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 12px;
-    margin-right: 16px;
-    flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  color: var(--text-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  margin-right: 16px;
+  flex-shrink: 0;
 }
 
 .rank-badge.rank-1 {
-    background: #FEF9C3;
-    color: #CA8A04;
+  background: #FEF9C3;
+  color: #CA8A04;
 }
 
 .rank-badge.rank-2 {
-    background: #F1F5F9;
-    color: #475569;
+  background: #F1F5F9;
+  color: #475569;
 }
 
 .rank-badge.rank-3 {
-    background: #FFEDD5;
-    color: #C2410C;
+  background: #FFEDD5;
+  color: #C2410C;
 }
 
 .book-info {
-    flex: 1;
-    overflow: hidden;
-    margin-right: 10px;
+  flex: 1;
+  overflow: hidden;
+  margin-right: 10px;
 }
 
 .book-title {
-    font-weight: 600;
-    color: var(--text-dark);
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-category {
-    font-size: 11px;
-    color: var(--text-gray);
-    margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-gray);
+  margin-top: 2px;
 }
 
 .book-sales {
-    text-align: right;
-    min-width: 50px;
+  text-align: right;
+  min-width: 50px;
 }
 
 .sale-count {
-    display: block;
-    font-weight: 700;
-    color: var(--primary-color);
-    font-size: 16px;
+  display: block;
+  font-weight: 700;
+  color: var(--accent-color); /* Số lượng bán dùng màu Cam cho nổi */
+  font-size: 16px;
 }
 
 .sale-label {
-    font-size: 9px;
-    color: var(--text-gray);
-    font-weight: 600;
-    text-transform: uppercase;
+  font-size: 9px;
+  color: var(--text-gray);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-/* ==========================================================================
-   6. DASHBOARD - RECENT ORDERS
-   ========================================================================== */
+/* Recent Orders */
 .recent-orders {
-    background: var(--bg-card);
-    padding: 0;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
+  background: var(--bg-card);
+  padding: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 
 .recent-orders-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .recent-orders-header h3 {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-color);
 }
 
 .btn-link-view {
-    color: var(--primary-color);
-    font-weight: 600;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  color: var(--accent-color);
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .btn-link-view:hover {
-    gap: 8px;
+  gap: 8px;
+  text-decoration: underline;
 }
 
 /* ==========================================================================
-   7. TABLES (Bảng dữ liệu chung)
+   7. TABLES
    ========================================================================== */
 .table-box,
 .table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    background: var(--bg-card);
-    border-radius: var(--radius);
+  width: 100%;
+  overflow-x: auto;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+}
+
+.table-box.mb-20 {
+  margin-bottom: 20px;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    white-space: nowrap;
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
 }
 
 thead th {
-    text-align: left;
-    padding: 16px 24px;
-    background: #F9FAFB;
-    color: var(--text-gray);
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  padding: 16px 24px;
+  background: #F9FAFB;
+  color: var(--primary-color); /* Tiêu đề bảng màu Navy */
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-color);
 }
 
 tbody td {
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-dark);
-    vertical-align: middle;
-    font-size: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-dark);
+  vertical-align: middle;
+  font-size: 14px;
 }
 
 tbody tr:last-child td {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 tbody tr:hover {
-    background-color: #F9FAFB;
+  background-color: #F9FAFB;
 }
 
-/* Badges trạng thái */
+/* Status Badges */
 .status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
 }
 
 .status-pending {
-    background: var(--warning-bg);
-    color: var(--warning-text);
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 
 .status-processing {
-    background: var(--info-bg);
-    color: var(--info-text);
+  background: var(--info-bg);
+  color: var(--info-text);
 }
 
 .status-completed {
-    background: var(--success-bg);
-    color: var(--success-text);
+  background: var(--success-bg);
+  color: var(--success-text);
 }
 
 .status-cancelled {
-    background: var(--danger-bg);
-    color: var(--danger-text);
+  background: var(--danger-bg);
+  color: var(--danger-text);
 }
 
-/* Nút hành động trong bảng */
+/* Action Buttons in Table */
 .action-col {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .btn-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
 }
 
 .btn-view {
-    background: #F3E8FF;
-    color: #7E22CE;
+  background: #F3E8FF;
+  color: #7E22CE;
 }
 
 .btn-view:hover {
-    background: #7E22CE;
-    color: white;
-    transform: translateY(-2px);
+  background: #7E22CE;
+  color: white;
 }
 
 .btn-edit {
-    background: #E0F2FE;
-    color: #0284C7;
+  background: #E0F2FE;
+  color: #0284C7;
 }
 
 .btn-edit:hover {
-    background: #0284C7;
-    color: white;
-    transform: translateY(-2px);
+  background: #0284C7;
+  color: white;
 }
 
 .btn-delete {
-    background: #FEE2E2;
-    color: #DC2626;
+  background: #FEE2E2;
+  color: #DC2626;
 }
 
 .btn-delete:hover {
-    background: #DC2626;
-    color: white;
-    transform: translateY(-2px);
+  background: #DC2626;
+  color: white;
+}
+
+/* Table Images */
+.table-img-grid {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.table-img-main {
+  width: 40px;
+  height: 60px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.table-img-sub {
+  width: 30px;
+  height: 45px;
+  border: 1px solid #eee;
+  border-radius: 3px;
+  object-fit: cover;
+  opacity: 0.8;
 }
 
 /* ==========================================================================
-   8. MODAL & FORMS
+   8. MODALS & FORMS
    ========================================================================== */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(17, 24, 39, 0.6);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(16, 42, 86, 0.5); /* Nền tối màu Navy */
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .modal.show {
-    display: flex;
-    opacity: 1;
+  display: flex;
+  opacity: 1;
 }
 
 .modal-box {
-    background: var(--bg-card);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 500px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
+  background: var(--bg-card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
 }
 
 .modal.show .modal-box {
-    transform: scale(1);
+  transform: scale(1);
 }
 
 .modal-box.large {
-    width: 98%;
-    max-width: 1600px;
-    height: 95vh;
-    display: flex;
-    flex-direction: column;
+  width: 98%;
+  max-width: 1600px;
+  height: 95vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* HEADER */
+/* Modal Header */
 .modal-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #fff;
-    flex-shrink: 0;
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .modal-header h3 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-dark);
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-color);
 }
 
-/* BODY */
+/* Modal Body */
 #dataForm {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
 }
 
 .modal-body {
-    padding: 25px;
-    overflow-y: auto;
-    background: #F9FAFB;
-    flex: 1;
+  padding: 25px;
+  overflow-y: auto;
+  background: #F9FAFB;
+  flex: 1;
 }
 
-/* FOOTER */
+/* Modal Footer */
 .modal-footer {
-    padding: 15px 25px;
-    border-top: 1px solid var(--border-color);
-    background: #fff;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    flex-shrink: 0;
+  padding: 15px 25px;
+  border-top: 1px solid var(--border-color);
+  background: #fff;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
-/* LAYOUT */
-.modal-horizontal-layout {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 25px;
-    align-items: start;
-}
-
-.status-update-box {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #E5E7EB;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-.status-update-box:last-child {
-    margin-bottom: 0;
-}
-
+/* Form Elements */
 .form-group {
-    margin-bottom: 16px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--text-gray);
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-gray);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    background: #fff;
-    transition: 0.2s;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  transition: 0.2s;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
+/* Nút Save - Màu CAM */
 .btn-save {
-    background: var(--primary-color);
-    color: white;
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
+  background: var(--accent-color);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.btn-save:hover {
+  background: var(--accent-hover);
 }
 
 .btn-cancel {
-    background: white;
-    border: 1px solid var(--border-color);
-    color: var(--text-dark);
-    padding: 10px 24px;
-    border-radius: 8px;
-    font-weight: 600;
+  background: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.btn-cancel:hover {
+  background: #f3f4f6;
+}
+
+/* Helpers */
+.modal-horizontal-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 25px;
+  align-items: start;
+}
+
+.status-update-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+}
+
+.status-update-box:last-child {
+  margin-bottom: 0;
 }
 
 /* ==========================================================================
-   9. RESPONSIVE
+   9. PAGE SPECIFIC STYLES
    ========================================================================== */
-@media (max-width: 1024px) {
-    .sidebar {
-        transform: translateX(-100%);
-        box-shadow: none;
-    }
-
-    .sidebar.active {
-        transform: translateX(0);
-        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-    }
-
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 20px;
-    }
-
-    .charts-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .full-width {
-        grid-column: span 1;
-    }
-
-    .dashboard-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .user-profile-badge {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .modal-horizontal-layout {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-box.large {
-        max-height: 95vh;
-    }
-}
-
-/* ==========================================================================
-   10. PAGE SPECIFIC STYLES
-   ========================================================================== */
+/* User Groups */
 .user-group-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #555;
-    margin-top: 30px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-left: 4px solid var(--primary-color);
-    padding-left: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-top: 30px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-left: 4px solid var(--accent-color); /* Viền trái màu Cam */
+  padding-left: 10px;
 }
 
 .user-group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.table-box.mb-20 {
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .role-badge {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .badge-admin {
-    background: #E0F2FE;
-    color: #0284C7;
+  background: #E0F2FE;
+  color: #0284C7;
 }
 
 .badge-staff {
-    background: #FEF3C7;
-    color: #D97706;
+  background: #FEF3C7;
+  color: #D97706;
 }
 
 .badge-member {
-    background: #F3F4F6;
-    color: #4B5563;
+  background: #F3F4F6;
+  color: #4B5563;
 }
 
-/* ORDER MODAL */
+/* Order Modal Info */
 .order-info-card {
-    background: #F9FAFB;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #E5E7EB;
+  background: #F9FAFB;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
 }
 
 .info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 14px;
-    border-bottom: 1px dashed #E5E7EB;
-    padding-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 14px;
+  border-bottom: 1px dashed #E5E7EB;
+  padding-bottom: 8px;
 }
 
 .info-row:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .info-label {
-    color: #6B7280;
-    font-weight: 500;
+  color: #6B7280;
+  font-weight: 500;
 }
 
 .info-value {
-    color: #111827;
-    font-weight: 600;
-    text-align: right;
-    max-width: 60%;
-    word-wrap: break-word;
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+  max-width: 60%;
+  word-wrap: break-word;
 }
 
-/* GRID ẢNH TRONG BẢNG */
-.table-img-grid {
-    display: flex;
-    gap: 4px;
-    align-items: center;
+/* ==========================================================================
+   10. UI UTILITIES
+   ========================================================================== */
+/* Tabs */
+.tabs-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 
-.table-img-main {
-    width: 40px;
-    height: 60px;
-    border: 1px solid #eee;
-    border-radius: 4px;
-    object-fit: cover;
+.tab-btn {
+  padding: 10px 20px;
+  border: none;
+  background: #f1f3f5;
+  color: #555;
+  cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.table-img-sub {
-    width: 30px;
-    height: 45px;
-    border: 1px solid #eee;
-    border-radius: 3px;
-    object-fit: cover;
-    opacity: 0.8;
+.tab-btn:hover {
+  background: #e9ecef;
+  color: var(--primary-color);
 }
 
-/* GRID ẢNH TRONG MODAL */
+.tab-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Modal Images */
 .modal-img-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-    margin-top: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 5px;
 }
 
 .img-upload-box {
-    text-align: center;
+  text-align: center;
 }
 
 .img-preview {
-    width: 100%;
-    height: 100px;
-    border: 1px dashed #ddd;
-    border-radius: 6px;
-    margin-top: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #fafafa;
+  width: 100%;
+  height: 100px;
+  border: 1px dashed #ddd;
+  border-radius: 6px;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fafafa;
 }
 
 .img-preview img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .img-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #666;
-    margin-bottom: 4px;
-    display: block;
-    text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 4px;
+  display: block;
+  text-align: left;
 }
-       
-        .tabs-container { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .tab-btn { padding: 10px 20px; border: none; background: #f1f3f5; color: #555; cursor: pointer; border-radius: 6px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
-        .tab-btn:hover { background: #e9ecef; }
-        .tab-btn.active { background: var(--primary-color); color: white; }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        
-        /* CSS ảnh preview trong Modal */
-        .img-preview-container {
-            width: 100%;
-            height: 150px;
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fafafa;
-            overflow: hidden;
-            margin-top: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .img-preview-container:hover { border-color: var(--primary-color); }
-        .img-preview-container img { width: 100%; height: 100%; object-fit: contain; display: none; }
-        .img-placeholder { color: #aaa; font-size: 13px; text-align: center; }
+
+/* Image Preview Container */
+.img-preview-container {
+  width: 100%;
+  height: 150px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  overflow: hidden;
+  margin-top: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.img-preview-container:hover {
+  border-color: var(--accent-color); /* Hover cam */
+}
+
+.img-preview-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: none;
+}
+
+.img-placeholder {
+  color: #aaa;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Search Wrapper */
+.search-wrapper {
+  position: relative;
+  width: 350px;
+}
+
+.search-wrapper input {
+  width: 100%;
+  padding: 10px 35px 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.2s;
+}
+
+.search-wrapper input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+/* ==========================================================================
+   11. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .user-profile-badge {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .modal-horizontal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-box.large {
+    max-height: 95vh;
+  }
+}

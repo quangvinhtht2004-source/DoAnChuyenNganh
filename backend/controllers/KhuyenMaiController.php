@@ -32,19 +32,19 @@ class KhuyenMaiController
         jsonResponse(true, "Chi tiết khuyến mãi", $data);
     }
 
-    /** * Kiểm tra mã & Tính tiền giảm 
-     * Đã thêm hàm làm tròn số (round) để tránh số lẻ thập phân
+    /** 
+     * Kiểm tra mã & Tính tiền giảm 
+     * ✅ ĐÃ SỬA: Đọc từ $_GET thay vì JSON body (khớp với route POST nhưng dùng query params)
      */
     public function kiemTra()
     {
+        // Đọc từ query parameters
         $code = $_GET["code"] ?? "";
-        
-        // --- Xử lý input tiền ---
         $rawTotal = $_GET["total"] ?? 0;
-        // Chỉ giữ lại số, bỏ các ký tự khác để đảm bảo tính toán đúng
+        
+        // Làm sạch input tiền
         $cleanTotal = preg_replace('/[^\d]/', '', $rawTotal);
         $tongTien = (float) $cleanTotal;
-        // ------------------------
         
         if (empty($code)) {
             jsonResponse(false, "Vui lòng nhập mã giảm giá");
@@ -78,25 +78,24 @@ class KhuyenMaiController
             jsonResponse(false, "Đơn chưa đủ điều kiện (Tối thiểu $min đ). Mua thêm $thieu đ để dùng mã.");
         }
 
-        // --- TÍNH TOÁN SỐ TIỀN GIẢM (Server tính luôn cho chắc) ---
+        // --- TÍNH TOÁN SỐ TIỀN GIẢM ---
         $tienGiam = 0;
         if ($voucher['LoaiKM'] == 'tien') {
             $tienGiam = (float)$voucher['GiaTri'];
         } else {
-            // Là phần trăm: Tính toán và LÀM TRÒN SỐ (round)
-            // Ví dụ: 152.250 * 15% = 22.837,5 -> Làm tròn thành 22.838
+            // Phần trăm: Tính toán và làm tròn
             $tienGiam = round($tongTien * ((float)$voucher['GiaTri'] / 100));
         }
 
-        // Không giảm quá tổng tiền đơn hàng
+        // Không giảm quá tổng tiền
         if ($tienGiam > $tongTien) {
             $tienGiam = $tongTien;
         }
 
         // Trả về kết quả
-        jsonResponse(true, "Áp dụng thành công", [
-            'info' => $voucher,         // Thông tin gốc
-            'tien_giam' => $tienGiam,   // Số tiền được giảm (đã làm tròn)
+        jsonResponse(true, "Áp dụng mã thành công", [
+            'info' => $voucher,
+            'SoTienGiam' => $tienGiam,  // ✅ Key này khớp với frontend
             'tong_tien_sau_giam' => $tongTien - $tienGiam
         ]);
     }

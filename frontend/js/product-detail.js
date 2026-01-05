@@ -294,7 +294,7 @@ async function loadRelatedProducts(cateId) {
         const res = await fetch(url);
         const data = await res.json();
         if(data.status && data.data) {
-            const list = data.data.slice(0, 4); 
+            const list = data.data.slice(0, 5); 
             let html = "";
             list.forEach(b => {
                  const imgUrl = b.AnhBia && b.AnhBia.startsWith("http") ? b.AnhBia : `../img/${b.AnhBia}`;

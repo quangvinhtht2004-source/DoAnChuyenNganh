@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Đánh giá | VKD Admin</title>
+    <title>Quản lý NXB | VKD Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
 <body>
-<div class="admin-container">
 
+<div class="admin-container">
      <aside class="sidebar">
         <div class="sidebar-header">
             <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
@@ -27,11 +27,11 @@
             <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
             <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
     <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
-    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+   <li><a href="nhaxuatban.html" class="active"><i class="fa-solid fa-building"></i>Quản lý Nhà xuất bản</a></li>
             
             <p class="menu-title">Hệ thống</p>
             <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
-           <li><a href="reviews.html" class="active"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
 
             <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
                 <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
@@ -40,48 +40,52 @@
     </aside>
 
     <main class="main-content">
-        <header class="page-header-button">
-            <h2>Quản lý Đánh giá Khách hàng</h2>
-            </header>
-
-        <div class="filter-bar">
-            <input type="text" id="searchReview" placeholder="Tìm tên sách hoặc người dùng...">
-            
-            <select id="filterStar">
-                <option value="">Tất cả sao</option>
-                <option value="5">5 Sao (Tuyệt vời)</option>
-                <option value="4">4 Sao (Tốt)</option>
-                <option value="3">3 Sao (Bình thường)</option>
-                <option value="2">2 Sao (Tệ)</option>
-                <option value="1">1 Sao (Rất tệ)</option>
-            </select>
-            
-            <button class="btn-reset" onclick="resetFilter()"><i class="fa-solid fa-rotate-right"></i></button>
+        <div class="page-header-button">
+            <h2>Danh sách Nhà Xuất Bản</h2>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="searchNXB" placeholder="Tìm nhà xuất bản..." style="padding: 10px; border:1px solid #ddd; border-radius:8px; width: 250px;">
+                <button class="btn-add" onclick="openModal()"><i class="fa-solid fa-plus"></i> Thêm mới</button>
+            </div>
         </div>
 
         <div class="table-box">
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">ID</th>
-                        <th style="width: 150px;">Khách hàng</th>
-                        <th style="width: 200px;">Sách</th>
-                        <th style="width: 100px;">Đánh giá</th>
-                        <th>Nội dung bình luận</th>
-                        <th style="width: 120px;">Ngày viết</th>
-                        <th style="width: 80px;">Xóa</th>
+                        <th style="width: 100px;">ID</th>
+                        <th>Tên Nhà Xuất Bản</th>
+                        <th style="text-align: center; width: 150px;">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="reviewsTable">
-                    <tr><td colspan="7" style="text-align:center; padding: 20px;">Đang tải dữ liệu...</td></tr>
-                </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </main>
 </div>
 
+<div id="editModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm NXB</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="dataForm">
+            <input type="hidden" name="NhaXuatBanID">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên NXB <span style="color:red">*</span></label>
+                    <input type="text" name="TenNhaXuatBan" required placeholder="Nhập tên nhà xuất bản...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button type="button" class="btn-save" onclick="saveData()">Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="../js/config.js"></script>
-<script src="../js/auth-middleware.js"></script>
-<script src="../js/admin-reviews.js"></script>
+<script src="../js/admin-nhaxuatban.js"></script> 
 </body>
 </html>

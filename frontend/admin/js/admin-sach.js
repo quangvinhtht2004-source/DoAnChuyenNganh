@@ -1,15 +1,12 @@
-// js/admin-sach.js - FIXED IMAGE PATH
+// js/admin-sach.js - SEARCH UPGRADE & VALIDATION
 
 // 1. CẤU HÌNH ĐƯỜNG DẪN ẢNH
-// Dựa vào hình folder của bạn, ảnh nằm ở frontend/img
 const IMAGE_BASE_URL = '../../img/'; 
-
-// ⚠️ QUAN TRỌNG: Trong folder của bạn KHÔNG có file VKD.png. 
-// Mình đổi tạm thành '10nguoi.jpg' (có trong hình bạn gửi) để test code không bị lỗi đỏ.
-// Bạn nên copy một file logo vào folder img và đổi tên thành 'default.png' sau nhé.
 const DEFAULT_IMAGE_URL = '../../img/10nguoi.jpg'; 
 
+// Biến toàn cục lưu dữ liệu
 let allBooksData = []; 
+// Các Map để tra cứu ID -> Tên (Dùng cho hiển thị và tìm kiếm)
 let g_Authors = {};
 let g_Categories = {};
 let g_Publishers = {};
@@ -17,46 +14,43 @@ let searchTimeout = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 DOM Loaded");
+    
+    // Tải Metadata trước để có dữ liệu mapping (ID -> Tên)
     await loadMetadata();
+    // Sau đó mới tải sách
     loadBooks();
 
+    // Gắn sự kiện tìm kiếm
     const searchInput = document.getElementById("searchBook");
     if (searchInput) {
         searchInput.addEventListener("input", applyFilter);
     }
 });
 
-// 1. TẢI DỮ LIỆU
-// 1. TẢI DỮ LIỆU (ĐÃ SỬA LỖI TREO LOADING)
+// 1. TẢI DỮ LIỆU SÁCH
 async function loadBooks() {
+    const tableBody = document.getElementById("tableBodySach");
     try {
-        // Thêm loading indicator nếu cần (tùy chọn)
-        const tableBody = document.getElementById("tableBodySach");
         if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;">⏳ Đang tải dữ liệu...</td></tr>`;
 
         const res = await fetch(AppConfig.getUrl('sach'));
         const result = await res.json();
         
-        // SỬA: Dù status là true hay false, ta vẫn xử lý để không bị treo
         if (result.status) {
-            allBooksData = result.data || []; // Đảm bảo luôn là mảng
+            allBooksData = result.data || []; 
         } else {
-            console.warn("API trả về false:", result.message);
-            allBooksData = []; // Nếu lỗi thì coi như không có dữ liệu
+            allBooksData = []; 
         }
 
-        // Luôn gọi renderTable để cập nhật giao diện (xóa chữ Đang tải...)
         renderTable(allBooksData);
         
     } catch (error) {
         console.error("Lỗi tải sách:", error);
-        const tableBody = document.getElementById("tableBodySach");
-        // Hiển thị lỗi rõ ràng ra màn hình
         if(tableBody) tableBody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:red">❌ Lỗi kết nối: ${error.message}</td></tr>`;
     }
 }
 
-// 2. TẢI DANH MỤC CON
+// 2. TẢI DANH MỤC CON (Metadata)
 async function loadMetadata() {
     try {
         const [resTG, resTL, resNXB] = await Promise.all([
@@ -67,20 +61,39 @@ async function loadMetadata() {
         
         const [jsonTG, jsonTL, jsonNXB] = await Promise.all([resTG.json(), resTL.json(), resNXB.json()]);
 
+        // Hàm điền Select box
         const fillSelect = (data, elementId, mapObj, idKey, nameKey) => {
             const el = document.getElementById(elementId);
-            if(!el) return;
             let html = `<option value="">-- Chọn --</option>`;
-            if (data.status) {
+            
+            if (data.status && data.data) {
                 data.data.forEach(i => {
-                    mapObj[i[idKey]] = i[nameKey];
-                    html += `<option value="${i[idKey]}">${i[nameKey]}</option>`;
+                    mapObj[i[idKey]] = i[nameKey]; // Lưu vào Map
+                    if(el) html += `<option value="${i[idKey]}">${i[nameKey]}</option>`;
                 });
             }
-            el.innerHTML = html;
+            if(el) el.innerHTML = html;
         };
 
-        fillSelect(jsonTG, 'selectTacGia', g_Authors, 'TacGiaID', 'TenTacGia');
+        // Hàm điền Datalist (Dành riêng cho Tác giả để hỗ trợ nhập mới)
+        const fillDataList = (data, elementId, mapObj, idKey, nameKey) => {
+            const el = document.getElementById(elementId);
+            let html = "";
+            if (data.status && data.data) {
+                data.data.forEach(i => {
+                    mapObj[i[idKey]] = i[nameKey]; // Lưu vào Map ID->Tên
+                    // Lưu thêm Map Tên->ID để tra ngược khi lưu
+                    mapObj["NAME_" + i[nameKey].toLowerCase()] = i[idKey]; 
+                    if(el) html += `<option value="${i[nameKey]}"></option>`;
+                });
+            }
+            if(el) el.innerHTML = html;
+        };
+
+        // Load Tác giả vào Datalist
+        fillDataList(jsonTG, 'listTacGia', g_Authors, 'TacGiaID', 'TenTacGia');
+        
+        // Load Thể loại & NXB vào Select thường
         fillSelect(jsonTL, 'selectTheLoai', g_Categories, 'TheLoaiID', 'TenTheLoai');
         fillSelect(jsonNXB, 'selectNXB', g_Publishers, 'NhaXuatBanID', 'TenNhaXuatBan');
 
@@ -89,32 +102,27 @@ async function loadMetadata() {
     }
 }
 
-// 3. HIỂN THỊ BẢNG (ĐÃ SỬA LỖI ĐƯỜNG DẪN ẢNH)
+// 3. HIỂN THỊ BẢNG
 function renderTable(list) {
     const tableBody = document.getElementById("tableBodySach");
     if (!tableBody) return;
     
     let newHTML = "";
 
-    if (list.length === 0) {
-        newHTML = `<tr><td colspan="10" style="text-align:center;">Không tìm thấy kết quả</td></tr>`;
+    if (!list || list.length === 0) {
+        newHTML = `<tr><td colspan="10" style="text-align:center; padding: 20px;">Không tìm thấy kết quả phù hợp</td></tr>`;
     } else {
         list.forEach(item => {
-            // --- XỬ LÝ ĐƯỜNG DẪN ẢNH KỸ LƯỠNG ---
-            let imgSrc = DEFAULT_IMAGE_URL; // Mặc định dùng ảnh thay thế trước
-            
+            // Xử lý ảnh
+            let imgSrc = DEFAULT_IMAGE_URL; 
             if (item.AnhBia && item.AnhBia !== "null" && item.AnhBia.trim() !== "") {
-                // Nếu là link online (http...) thì giữ nguyên
                 if (item.AnhBia.startsWith('http')) {
                     imgSrc = item.AnhBia;
                 } else {
-                    // Nếu là tên file (vd: dacnhantam.jpg), ghép với đường dẫn gốc
-                    // Loại bỏ dấu / ở đầu tên file nếu lỡ có trong DB
                     let cleanName = item.AnhBia.startsWith('/') ? item.AnhBia.substring(1) : item.AnhBia;
                     imgSrc = IMAGE_BASE_URL + cleanName;
                 }
             }
-            // -------------------------------------
 
             const gia = new Intl.NumberFormat('vi-VN').format(item.Gia) + 'đ';
             
@@ -122,9 +130,10 @@ function renderTable(list) {
             if(item.TrangThai == 0) statusBadge = `<span class="status-badge status-cancelled">Ngừng bán</span>`;
             if(item.TrangThai == 2) statusBadge = `<span class="status-badge status-pending">Hết hàng</span>`;
 
-            const tacGia = g_Authors[item.TacGiaID] || '-';
-            const theLoai = g_Categories[item.TheLoaiID] || '-';
-            const nxb = g_Publishers[item.NhaXuatBanID] || '-';
+            // Lấy tên từ Map
+            const tacGia = g_Authors[item.TacGiaID] || '---';
+            const theLoai = g_Categories[item.TheLoaiID] || '---';
+            const nxb = g_Publishers[item.NhaXuatBanID] || '---';
 
             newHTML += `
                 <tr>
@@ -159,33 +168,36 @@ function renderTable(list) {
         tableBody.innerHTML = newHTML;
     }
 }
-// 4. CHỨC NĂNG TÌM KIẾM (Debounce chuẩn)
+
+// 4. CHỨC NĂNG TÌM KIẾM
 function applyFilter() {
     const searchInput = document.getElementById("searchBook");
     if (!searchInput) return;
 
     const keyword = searchInput.value.toLowerCase().trim();
-
-    // Hủy lệnh cũ
     clearTimeout(searchTimeout);
 
-    // Đợi 300ms sau khi ngừng gõ
     searchTimeout = setTimeout(() => {
-        if (!keyword) {
-            renderTable(allBooksData);
-            return;
-        }
+        if (!keyword) { renderTable(allBooksData); return; }
         
-        const filtered = allBooksData.filter(item => 
-            (item.TenSach && item.TenSach.toLowerCase().includes(keyword)) || 
-            (item.SachID && item.SachID.toString().includes(keyword))
-        );
+        const filtered = allBooksData.filter(item => {
+            const matchId = item.SachID && item.SachID.toString().includes(keyword);
+            const matchName = item.TenSach && item.TenSach.toLowerCase().includes(keyword);
+            const authorName = (g_Authors[item.TacGiaID] || "").toLowerCase();
+            const matchAuthor = authorName.includes(keyword);
+            const catName = (g_Categories[item.TheLoaiID] || "").toLowerCase();
+            const matchCat = catName.includes(keyword);
+            const pubName = (g_Publishers[item.NhaXuatBanID] || "").toLowerCase();
+            const matchPub = pubName.includes(keyword);
+
+            return matchId || matchName || matchAuthor || matchCat || matchPub;
+        });
 
         renderTable(filtered);
     }, 300);
 }
 
-// 5. MỞ MODAL (GIỮ NGUYÊN)
+// 5. MỞ MODAL & RESET FORM
 window.openModalSach = function(sachId = null) {
     const modal = document.getElementById('editModalSach');
     const form = document.getElementById('formSach');
@@ -193,19 +205,21 @@ window.openModalSach = function(sachId = null) {
     if(!modal || !form) return;
 
     form.reset(); 
+    document.getElementById('hiddenTenAnh').value = ""; // Reset hidden input
     
+    // Reset ảnh preview
     const imgPreview = document.getElementById('previewMain').querySelector('img');
     const imgPlace = document.getElementById('previewMain').querySelector('.img-placeholder');
     if(imgPreview) { imgPreview.src=""; imgPreview.style.display = 'none'; }
     if(imgPlace) imgPlace.style.display = 'block';
 
     if (sachId) {
+        // --- CHẾ ĐỘ SỬA ---
         const item = allBooksData.find(b => b.SachID == sachId);
         if(!item) return;
 
         document.getElementById('modalTitleSach').innerText = "Cập nhật sách #" + item.SachID;
         form.querySelector('[name="SachID"]').value = item.SachID;
-        
         form.querySelector('[name="TenSach"]').value = item.TenSach;
         form.querySelector('[name="Gia"]').value = item.Gia; 
         form.querySelector('[name="PhanTramGiam"]').value = item.PhanTramGiam;
@@ -213,16 +227,21 @@ window.openModalSach = function(sachId = null) {
         form.querySelector('[name="TrangThai"]').value = item.TrangThai;
         form.querySelector('[name="MoTa"]').value = item.MoTa || "";
         
-        form.querySelector('[name="TacGiaID"]').value = item.TacGiaID || "";
+        // Load Tên tác giả vào Input Text (từ ID)
+        const tenTacGia = g_Authors[item.TacGiaID] || "";
+        document.getElementById('inputTacGia').value = tenTacGia;
+
         form.querySelector('[name="TheLoaiID"]').value = item.TheLoaiID || "";
         form.querySelector('[name="NhaXuatBanID"]').value = item.NhaXuatBanID || "";
         
+        // Load ảnh vào hidden input & preview
         if(item.AnhBia) {
-            form.querySelector('[name="AnhBia"]').value = item.AnhBia;
+            document.getElementById('hiddenTenAnh').value = item.AnhBia;
             previewImage(item.AnhBia, 'previewMain');
         }
 
     } else {
+        // --- CHẾ ĐỘ THÊM MỚI ---
         document.getElementById('modalTitleSach').innerText = "Thêm sách mới";
         form.querySelector('[name="SachID"]').value = "";
     }
@@ -230,33 +249,131 @@ window.openModalSach = function(sachId = null) {
     modal.classList.add('show'); 
 }
 
-// 6. LƯU DỮ LIỆU (GIỮ NGUYÊN)
+// 6. XỬ LÝ CHỌN FILE TỪ MÁY
+window.handleFileSelect = function(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        
+        // 1. Hiển thị Preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const box = document.getElementById('previewMain');
+            const img = box.querySelector('img');
+            const ph = box.querySelector('.img-placeholder');
+            
+            img.src = e.target.result;
+            img.style.display = 'block';
+            ph.style.display = 'none';
+        }
+        reader.readAsDataURL(file);
+
+        // 2. Gán tên file vào input hidden (Giả lập upload)
+        document.getElementById('hiddenTenAnh').value = file.name;
+    }
+}
+
+// 7. LƯU DỮ LIỆU (CÓ BẪY LỖI CHẶT CHẼ)
 window.saveDataSach = async function() {
     const form = document.getElementById('formSach');
-    if (!form.checkValidity()) {
-        form.reportValidity(); 
-        return;
-    }
-
+    
+    // Lấy dữ liệu từ form
     const formData = new FormData(form);
     const rawData = Object.fromEntries(formData.entries());
 
+    // --- BẮT ĐẦU BẪY LỖI (VALIDATION) ---
+    const soLuong = parseInt(rawData.SoLuong || 0);
+    const giamGia = parseInt(rawData.PhanTramGiam || 0);
+    const giaBan = parseFloat(rawData.Gia || 0);
+
+    // Bẫy lỗi Tồn kho: Không được số âm
+    if (soLuong < 0) {
+        alert("⚠️ Lỗi nhập liệu: Số lượng tồn kho không được là số âm!");
+        // Đưa con trỏ chuột về ô nhập liệu bị sai
+        const inputSL = form.querySelector('[name="SoLuong"]');
+        if(inputSL) {
+            inputSL.value = 0; // Reset về 0
+            inputSL.focus();
+        }
+        return; // Dừng lại, không gửi dữ liệu
+    }
+
+    // Bẫy lỗi Giảm giá: Phải dưới 50% (>= 50 là lỗi)
+    if (giamGia >= 50) {
+        alert("⚠️ Lỗi nhập liệu: Phần trăm giảm giá phải nhỏ hơn 50%!");
+        const inputGG = form.querySelector('[name="PhanTramGiam"]');
+        if(inputGG) {
+            inputGG.value = 0; 
+            inputGG.focus();
+        }
+        return; 
+    }
+
+    if (giamGia < 0) {
+        alert("⚠️ Lỗi nhập liệu: Phần trăm giảm giá không được là số âm!");
+        return;
+    }
+
+    if (giaBan <= 0) {
+        alert("⚠️ Lỗi nhập liệu: Giá bán phải lớn hơn 0!");
+        return;
+    }
+
+    // --- XỬ LÝ TÁC GIẢ (Tự động tạo mới nếu chưa có) ---
+    const tenTacGiaInput = document.getElementById('inputTacGia').value.trim();
+    let finalTacGiaID = null;
+
+    if (tenTacGiaInput) {
+        const keyName = "NAME_" + tenTacGiaInput.toLowerCase();
+        if (g_Authors[keyName]) {
+            // Đã có -> Lấy ID
+            finalTacGiaID = g_Authors[keyName];
+        } else {
+            // Chưa có -> Gọi API tạo mới
+            try {
+                if(confirm(`Tác giả "${tenTacGiaInput}" chưa có trong hệ thống. Bạn có muốn tạo mới không?`)) {
+                    const resNewTG = await fetch(AppConfig.getUrl('tacgia/tao'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ TenTacGia: tenTacGiaInput })
+                    });
+                    const dataNewTG = await resNewTG.json();
+                    
+                    if(dataNewTG.status) {
+                        // Reload lại Metadata để cập nhật ID mới
+                        await loadMetadata();
+                        // Lấy ID mới vừa tạo
+                        finalTacGiaID = g_Authors["NAME_" + tenTacGiaInput.toLowerCase()];
+                    } else {
+                        alert("Không thể tạo tác giả mới: " + dataNewTG.message);
+                        return;
+                    }
+                } else {
+                    return; // Người dùng hủy, dừng lưu
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Lỗi khi tạo tác giả mới");
+                return;
+            }
+        }
+    }
+
+    // --- CHUẨN BỊ PAYLOAD GỬI ĐI ---
     const payload = {
         TenSach: rawData.TenSach,
-        Gia: parseFloat(rawData.Gia),
-        PhanTramGiam: parseInt(rawData.PhanTramGiam || 0),
-        SoLuong: parseInt(rawData.SoLuong || 0),
+        Gia: giaBan,
+        PhanTramGiam: giamGia,
+        SoLuong: soLuong,
         TrangThai: parseInt(rawData.TrangThai),
-        AnhBia: rawData.AnhBia || "",
+        AnhBia: document.getElementById('hiddenTenAnh').value || "", // Lấy từ hidden input
         MoTa: rawData.MoTa || "",
-        TacGiaID: rawData.TacGiaID ? parseInt(rawData.TacGiaID) : null,
+        TacGiaID: finalTacGiaID, // ID đã xử lý ở trên
         TheLoaiID: rawData.TheLoaiID ? parseInt(rawData.TheLoaiID) : null,
         NhaXuatBanID: rawData.NhaXuatBanID ? parseInt(rawData.NhaXuatBanID) : null
     };
 
     const id = rawData.SachID;
     const url = id ? AppConfig.getUrl('sach/sua') : AppConfig.getUrl('sach/tao');
-    
     if(id) payload.SachID = parseInt(id);
 
     try {
@@ -269,7 +386,7 @@ window.saveDataSach = async function() {
         const result = await res.json();
         
         if (result.status) {
-            alert("✅ Thành công!");
+            alert("✅ Lưu thành công!");
             closeModal('editModalSach');
             loadBooks();
         } else {
@@ -280,30 +397,19 @@ window.saveDataSach = async function() {
     }
 }
 
-// 7. XÓA SÁCH (GIỮ NGUYÊN)
+// 8. CÁC HÀM KHÁC (Delete, Preview, Helper)
 window.deleteBook = async function(id) {
     if (!confirm("Bạn có chắc muốn xóa sách này?")) return;
-    
     try {
         const res = await fetch(AppConfig.getUrl('sach/xoa'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ SachID: id })
         });
-        
         const result = await res.json();
-        if (result.status) {
-            alert("✅ Đã xóa!");
-            loadBooks();
-        } else {
-            alert("⚠️ " + result.message); 
-        }
-    } catch (e) {
-        alert("Lỗi mạng!");
-    }
+        if (result.status) { alert("✅ Đã xóa!"); loadBooks(); } else { alert("⚠️ " + result.message); }
+    } catch (e) { alert("Lỗi mạng!"); }
 }
 
-// HELPER (GIỮ NGUYÊN)
 window.closeModal = function(id) {
     const m = document.getElementById(id);
     if(m) m.classList.remove('show');
@@ -316,12 +422,10 @@ window.previewImage = function(val, targetId) {
     const ph = box.querySelector('.img-placeholder');
     
     if(val && val.trim() !== "") {
-        if(!val.startsWith('http')) val = IMAGE_BASE_URL + val;
+        if(!val.startsWith('http') && !val.startsWith('data:')) val = IMAGE_BASE_URL + val;
         img.src = val;
         img.style.display = 'block';
         ph.style.display = 'none';
-        
-        // Thêm xử lý lỗi ảnh
         img.onerror = function() {
             img.style.display = 'none';
             ph.style.display = 'block';

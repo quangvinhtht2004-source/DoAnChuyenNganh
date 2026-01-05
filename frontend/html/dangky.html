@@ -7,6 +7,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css"> 
+    
+    <style>
+        .otp-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-send-otp {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+            font-size: 13px;
+        }
+        .btn-send-otp:hover { background: #555; }
+        .btn-send-otp:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
 </head>
 <body class="auth-body">
 
@@ -29,32 +50,38 @@
                 <div class="form-group">
                     <label class="form-label">Họ và tên</label>
                     <div class="input-field-modern">
-                        <input type="text" id="fullName" placeholder="VD: Nguyễn Văn A" required>
-                        <i class="fa-regular fa-user input-icon-left"></i>
+                        <input type="text" id="fullName" placeholder="VD: Nguyễn Văn A" required style="padding-left: 15px;">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Địa chỉ Email</label>
                     <div class="input-field-modern">
-                        <input type="email" id="email" placeholder="name@example.com" required>
-                        <i class="fa-regular fa-envelope input-icon-left"></i>
+                        <input type="email" id="email" placeholder="name@example.com" required style="padding-left: 15px;">
                     </div>
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label">Mã xác thực (OTP)</label>
+                    <div class="otp-group">
+                        <div class="input-field-modern" style="flex: 1;">
+                            <input type="text" id="otpInput" placeholder="Nhập mã 6 số gửi về mail" maxlength="6" style="padding-left: 15px;">
+                        </div>
+                        <button type="button" class="btn-send-otp" id="btnSendOTP">Lấy mã OTP</button>
+                    </div>
+                    <small id="otpMessage" style="color: green; font-size: 12px; display: none; margin-top: 5px;">Mã OTP đã được gửi!</small>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Số điện thoại</label>
                     <div class="input-field-modern">
-                        <input type="tel" id="phone" placeholder="09xxxxxxxx" required>
-                        <i class="fa-solid fa-phone input-icon-left"></i>
+                        <input type="tel" id="phone" placeholder="09xxxxxxxx" required style="padding-left: 15px;">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Mật khẩu</label>
                     <div class="input-field-modern">
-                        <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" required>
-                        <i class="fa-solid fa-lock input-icon-left"></i>
+                        <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" required style="padding-left: 15px;">
                         <span id="togglePasswordRegister" class="input-icon-right">
                             <i class="fa-regular fa-eye-slash"></i>
                         </span>
@@ -68,21 +95,6 @@
 
                 <button type="submit" class="btn-auth-primary" id="btnSubmit">Đăng ký tài khoản</button>
             </form>
-
-            <div class="divider-text">
-                <span>Hoặc đăng ký bằng</span>
-            </div>
-
-            <div class="social-grid">
-                <button class="btn-social-outline">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
-                    Google
-                </button>
-                <button class="btn-social-blue">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg" alt="Facebook">
-                    Facebook
-                </button>
-            </div>
 
             <p class="auth-bottom-link">
                 Bạn đã có tài khoản? <a href="dangnhap.html">Đăng nhập ngay</a>

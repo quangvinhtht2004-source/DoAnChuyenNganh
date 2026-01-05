@@ -7,10 +7,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        /* --- SỬA LỖI KHÔNG THAO TÁC ĐƯỢC TRANG --- */
+        /* CSS này đảm bảo lớp phủ modal không chặn chuột khi đang ẩn */
+        .modal-overlay {
+            pointer-events: none; /* Cho phép click xuyên qua khi ẩn */
+        }
+        .modal-overlay.active {
+            pointer-events: auto; /* Bật lại click khi modal hiện */
+        }
+        
+        /* Style cho thông báo voucher */
+        .voucher-success { color: #166534; font-size: 13px; margin-top: 5px; display: block; }
+        .voucher-error { color: #dc2626; font-size: 13px; margin-top: 5px; display: block; }
+    </style>
 </head>
 <body>
 
-   <header class="header-new">
     <div class="top-bar">
         <div class="container top-bar-inner">
             <div class="top-left">
@@ -45,7 +59,7 @@
             <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a> 
             
             <div class="search-box-custom">
-                <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." autocomplete="off">
                 <button class="search-btn-custom" onclick="handleSearch()">
                     Tìm kiếm
                 </button>
@@ -73,14 +87,11 @@
 </header>
 
     <main class="container" style="margin-top: 30px; margin-bottom: 60px;">
-        
         <h1 style="font-size: 28px; font-weight: 800; margin-bottom: 5px;">Thanh toán</h1>
         <p style="color: #666; margin-bottom: 30px;">Vui lòng kiểm tra thông tin giao hàng và đơn hàng</p>
 
         <form id="checkoutForm" class="checkout-layout-grid">
-            
             <div class="checkout-left">
-                
                 <div class="section-card">
                     <div class="sec-header">
                         <div class="icon-circle"><i class="fa-solid fa-truck"></i></div>
@@ -89,28 +100,28 @@
 
                     <div class="form-group">
                         <label>Họ và tên người nhận</label>
-                        <input type="text" id="fullname" class="form-input" placeholder="Nguyễn Văn A" required>
+                        <input type="text" id="fullname" placeholder="Nguyễn Văn A" required>
                     </div>
 
                     <div class="form-row-2">
                         <div class="form-group">
                             <label>Số điện thoại</label>
-                            <input type="text" id="phone" class="form-input" placeholder="0912 345 678" required>
+                            <input type="text" id="phone" placeholder="0912 345 678" required>
                         </div>
                         <div class="form-group">
-                            <label>Email (để nhận hóa đơn)</label>
-                            <input type="email" id="email" class="form-input" placeholder="vidu@gmail.com">
+                            <label>Email (Tùy chọn)</label>
+                            <input type="email" id="email" placeholder="vidu@gmail.com">
                         </div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="address-container">
                         <label>Địa chỉ nhận hàng</label>
-                        <input type="text" id="address" class="form-input" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện..." required>
+                        <input type="text" id="address" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện...">
                     </div>
 
                     <div class="form-group">
                         <label>Ghi chú đơn hàng (Tùy chọn)</label>
-                        <textarea id="note" class="form-input" rows="3" placeholder="Ví dụ: Giao hàng vào giờ hành chính..."></textarea>
+                        <textarea id="note" rows="2" placeholder="Ví dụ: Giao hàng vào giờ hành chính..."></textarea>
                     </div>
                 </div>
 
@@ -127,7 +138,7 @@
                             </div>
                             <div class="pay-info">
                                 <strong>Thanh toán khi nhận hàng (COD)</strong>
-                                <p>Thanh toán tiền mặt trực tiếp cho shipper khi nhận hàng</p>
+                                <p>Thanh toán tiền mặt trực tiếp cho shipper</p>
                             </div>
                             <i class="fa-solid fa-box pay-icon"></i>
                         </label>
@@ -137,8 +148,8 @@
                                 <input type="radio" name="payment_method" value="BANKING">
                             </div>
                             <div class="pay-info">
-                                <strong>Thanh toán bằng mã QR</strong>
-                                <p>Quét mã QR qua ứng dụng ngân hàng hoặc ví điện tử</p>
+                                <strong>Thanh toán bằng mã QR (Chuyển khoản)</strong>
+                                <p>Quét mã VietQR qua ứng dụng ngân hàng</p>
                             </div>
                             <i class="fa-solid fa-qrcode pay-icon"></i>
                         </label>
@@ -149,29 +160,25 @@
                             </div>
                             <div class="pay-info">
                                 <strong>Nhận tại cửa hàng</strong>
-                                <p>Thanh toán và nhận sách trực tiếp tại quầy</p>
+                                <p>Đến trực tiếp cửa hàng để nhận sách</p>
                             </div>
                             <i class="fa-solid fa-store pay-icon"></i>
                         </label>
                     </div>
                 </div>
-
             </div>
 
             <div class="checkout-right">
                 <div class="order-summary-card">
                     <h3 class="summary-title">Đơn hàng của bạn (<span id="totalItemsCount">0</span>)</h3>
-                    
-                    <div id="checkout-order-list" class="checkout-items-wrapper">
-                        </div>
-
+                    <div id="checkout-order-list" class="checkout-items-wrapper"></div>
                     <div class="summary-divider"></div>
 
                     <div class="coupon-box-checkout">
-                        <input type="text" id="voucher-input" placeholder="Nhập mã giảm giá">
+                        <input type="text" id="voucher-input" placeholder="Nhập mã (Test: VKD10)">
                         <button type="button" id="apply-voucher-btn">Áp dụng</button>
                     </div>
-                    <div id="voucher-message" style="font-size:12px; margin-bottom:10px;"></div>
+                    <div id="voucher-message"></div>
 
                     <div class="summary-row">
                         <span>Tạm tính</span>
@@ -179,38 +186,50 @@
                     </div>
                     <div class="summary-row">
                         <span>Phí vận chuyển</span>
-                        <span>30.000đ</span>
+                        <span id="shipping-fee-display">30.000đ</span>
                     </div>
                     <div class="summary-row" id="discount-row" style="display:none; color:#166534;">
                         <span>Giảm giá (<b id="discount-code"></b>)</span>
                         <span id="checkout-discount">-0đ</span>
                     </div>
-
                     <div class="summary-divider"></div>
-
                     <div class="summary-row total">
                         <span style="color:#333;">Tổng cộng</span>
-                        <span id="checkout-total" style="color:var(--login-blue);">0đ</span>
+                        <span id="checkout-total" style="color:var(--primary-color); font-size: 20px; font-weight: bold;">0đ</span>
                     </div>
 
-                    <button type="submit" class="btn-confirm-checkout">
-                        XÁC NHẬN THANH TOÁN
+                    <button type="submit" class="btn-confirm-checkout">XÁC NHẬN THANH TOÁN</button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <div id="qrModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 style="margin: 0; color: #333;">Thanh toán QR</h3>
+            <p style="color: #666; font-size: 13px; margin-top: 5px;">Mở App Ngân hàng để quét mã</p>
+            
+            <div class="qr-wrapper">
+                <img id="qrImage" src="" alt="QR Code" />
+                <div id="qrOverlay" class="qr-expired-overlay" style="display: none;">
+                    <span><i class="fa-solid fa-circle-exclamation"></i> Mã QR đã hết hạn</span>
+                    <button type="button" id="refreshQrBtn" class="btn-refresh-qr">
+                        <i class="fa-solid fa-arrows-rotate"></i> Lấy mã mới
                     </button>
-
-                    <p class="policy-text">
-                        Bằng việc tiến hành đặt hàng, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> của chúng tôi.
-                    </p>
-                    
-                    <div class="security-badges">
-                        <span><i class="fa-solid fa-shield-halved"></i> Thanh toán an toàn</span>
-                        <span><i class="fa-solid fa-lock"></i> Bảo mật thông tin</span>
-                    </div>
-
                 </div>
             </div>
 
-        </form>
-    </main>
+            <div class="qr-amount" id="qrAmountDisplay">0đ</div>
+            <div class="qr-bank-info">Nội dung: <strong id="qrContentDisplay">VKD BOOK</strong></div>
+            <div class="countdown-timer" id="timer">05:00</div>
+
+            <button type="button" id="confirmPaidBtn" class="btn-paid-confirm">
+                <i class="fa-solid fa-check"></i> TÔI ĐÃ THANH TOÁN
+            </button>
+        </div>
+    </div>
+
     <footer class="footer">
     <div class="container">
         <div class="footer-grid">
@@ -226,29 +245,27 @@
                     <li><i class="fa-solid fa-phone"></i> 0707 189 144</li>
                 </ul>
             </div>
-
             <div class="footer-col">
-    <h4 class="footer-heading">DỊCH VỤ</h4>
-    <ul class="footer-links">
-        <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
-        <li><a href="chinhsachbaomat.html">Chính sách bảo mật thông tin cá nhân</a></li>
-        <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
-        <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
-    </ul>
-</div>
-
+                <h4 class="footer-heading">DỊCH VỤ</h4>
+                <ul class="footer-links">
+                    <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+                    <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+                    <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+                    <li><a href="chinhsachbaomat.html">Chính sách bảo mật</a></li>
+                    
+                </ul>
+            </div>
            <div class="footer-col">
-    <h4 class="footer-heading">HỖ TRỢ</h4>
-    <ul class="footer-links">
-        <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
-        <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
-    </ul>
-</div>
-
+                <h4 class="footer-heading">HỖ TRỢ</h4>
+                <ul class="footer-links">
+                    <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
+                    <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
+                </ul>
+            </div>
             <div class="footer-col">
                 <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
                 <div class="social-links">
-                    <a href="https://www.facebook.com/DoanHoiSTU" target="_blank" title="Facebook STU">
+                    <a href="https://www.facebook.com/ctsvSTU" target="_blank" title="Facebook STU">
                         <i class="fa-brands fa-facebook-f"></i>
                     </a>
                     
@@ -256,7 +273,7 @@
                         <i class="fa-brands fa-youtube"></i>
                     </a>
                     
-                    <a href="https://www.instagram.com/explore/tags/dhcnsg/" target="_blank" title="Instagram STU">
+                    <a href="https://www.instagram.com/dhcnsg/" target="_blank" title="Instagram STU">
                         <i class="fa-brands fa-instagram"></i>
                     </a>
                     
@@ -267,7 +284,6 @@
             </div>
         </div>
     </div>
-
     <div class="footer-bottom">
         <div class="container">
             <div class="copyright-text">
@@ -280,6 +296,5 @@
 
     <script src="../js/config.js"></script>
     <script src="../js/thanhtoan.js"></script>
-
 </body>
 </html>

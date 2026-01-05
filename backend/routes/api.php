@@ -37,7 +37,7 @@ $router->get('don-hang/all',       'DonHangController@list');
 $router->get('don-hang/chi-tiet',  'DonHangController@detail');
 $router->post('don-hang/cap-nhat', 'DonHangController@updateStatus');
 
-// 6. KHUYẾN MÃI, REVIEW...
+// 6. KHUYẾN MÃI, REVIEW... 
 $router->post('review/them', 'ReviewController@add');
 $router->get('review',       'ReviewController@list');
 $router->post('review/xoa',  'ReviewController@delete');
