@@ -130,28 +130,38 @@ window.openOrderModal = async function(orderId) {
         console.error("Không tìm thấy đơn hàng ID:", orderId);
         return;
     }
-
-    // SỬ DỤNG HÀM PARSE ĐỂ HIỂN THỊ CHI TIẾT
     const info = parseOrderInfo(order);
 
-    // 1. Điền thông tin chung vào Modal
     document.getElementById("modalOrderId").innerText = "#" + order.DonHangID;
-    
-    // ĐIỀN TÊN NGƯỜI NHẬN ĐÃ BÓC TÁCH
     document.getElementById("detailName").innerText = info.name; 
     document.getElementById("detailPhone").innerText = info.phone;
     document.getElementById("detailAddress").innerText = info.address;
     document.getElementById("detailDate").innerText = info.date;
 
-    // Hiển thị ghi chú nếu có (Nếu HTML modal có chỗ hiển thị ghi chú thì bỏ comment dòng dưới)
-    // if(document.getElementById("detailNote")) document.getElementById("detailNote").innerText = info.note;
-    
-    // Set trạng thái select box
     const statusSelect = document.getElementById("updateStatus");
+    const saveBtn = document.querySelector(".btn-save"); 
     if(statusSelect) statusSelect.value = order.TrangThai;
-    
-    const saveBtn = document.querySelector(".btn-save");
     if(saveBtn) saveBtn.setAttribute("data-id", orderId);
+
+    if (order.TrangThai === 'HoanThanh' || order.TrangThai === 'DaHuy') {
+        // Nếu đã Hoàn thành hoặc Đã hủy:
+        if(statusSelect) statusSelect.disabled = true; // Không cho chọn
+        if(saveBtn) {
+            saveBtn.disabled = true; // Khóa nút bấm
+            saveBtn.style.opacity = "0.5"; 
+            saveBtn.style.cursor = "not-allowed";
+            saveBtn.innerHTML = `<i class="fa-solid fa-lock"></i> Đã chốt đơn`;
+        }
+    } else {
+        // Nếu các trạng thái khác: Mở khóa
+        if(statusSelect) statusSelect.disabled = false;
+        if(saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = "1";
+            saveBtn.style.cursor = "pointer";
+            saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Lưu trạng thái`;
+        }
+    }
 
     // 2. Tải chi tiết sản phẩm
     const itemsTable = document.getElementById("orderItemsTable");

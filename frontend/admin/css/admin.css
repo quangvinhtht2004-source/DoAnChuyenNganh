@@ -678,6 +678,8 @@ img {
   overflow-x: auto;
   background: var(--bg-card);
   border-radius: var(--radius);
+  max-height: 70vh;
+  border: 1px solid var(--border-color);
 }
 
 .table-box.mb-20 {
@@ -700,6 +702,9 @@ thead th {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 2px solid var(--border-color);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 tbody td {
@@ -890,11 +895,12 @@ tbody tr:hover {
 }
 
 /* Modal Body */
-#dataForm {
+.modal-box form {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  overflow: hidden;
+  flex: 1; /* Chiếm toàn bộ không gian dọc còn lại */
+  overflow: hidden; /* Ngăn không cho form tràn ra ngoài khung modal */
+  height: 100%; /* Đảm bảo form tận dụng hết chiều cao của modal */
 }
 
 .modal-body {
@@ -1270,4 +1276,83 @@ tbody tr:hover {
   .modal-box.large {
     max-height: 95vh;
   }
+}
+/* ========================
+   PAGINATION STYLES
+   ======================== */
+.pagination-container {
+    display: flex;
+    justify-content: flex-end; /* Căn phải */
+    align-items: center;
+    gap: 5px;
+    margin-top: 15px;
+    padding-bottom: 20px;
+}
+
+.page-btn {
+    min-width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    background: #fff;
+    color: var(--text-dark);
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: #F3F4F6;
+}
+
+.page-btn.active {
+    background: var(--primary-color); /* Nền xanh Navy */
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.page-btn:disabled {
+    background: #f9fafb;
+    color: #ccc;
+    cursor: not-allowed;
+    border-color: #eee;
+}
+/* --- FORM STYLE MỚI CHO MODAL USER --- */
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 12px;
+    color: #9CA3AF;
+    font-size: 14px;
+    pointer-events: none; /* Để click xuyên qua icon vào input */
+}
+
+.input-with-icon input,
+.input-with-icon select {
+    padding-left: 38px !important; /* Chừa chỗ cho icon */
+}
+
+.input-with-icon input:focus + i,
+.input-with-icon select:focus + i {
+    color: var(--primary-color); /* Icon đổi màu khi focus */
+}
+
+/* Tùy chỉnh select box cho đẹp hơn */
+#userRoleSelect {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23131313%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 10px auto;
 }

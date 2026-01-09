@@ -22,10 +22,25 @@ class NhaXuatBanController {
 
         if (empty($input["TenNhaXuatBan"])) {
             jsonResponse(false, "Tên NXB không được để trống");
+            return;
         }
 
-        $result = $this->model->create($input["TenNhaXuatBan"]);
-        jsonResponse($result["status"], $result["message"]);
+        $ten = trim($input["TenNhaXuatBan"]);
+
+        // 1. Kiểm tra trùng tên
+        $existing = $this->model->checkExist($ten);
+        if ($existing) {
+            jsonResponse(false, "Nhà xuất bản '$ten' đã tồn tại. Vui lòng kiểm tra lại!");
+            return;
+        }
+
+        // 2. Tạo mới
+        $ok = $this->model->create($ten);
+        if ($ok) {
+            jsonResponse(true, "Thêm NXB thành công!");
+        } else {
+            jsonResponse(false, "Lỗi hệ thống hoặc tên bị trùng.");
+        }
     }
 
     public function update() {
@@ -33,10 +48,21 @@ class NhaXuatBanController {
 
         if (empty($input["NhaXuatBanID"]) || empty($input["TenNhaXuatBan"])) {
             jsonResponse(false, "Thiếu dữ liệu");
+            return;
         }
 
-        $result = $this->model->update($input["NhaXuatBanID"], $input["TenNhaXuatBan"]);
-        jsonResponse($result["status"], $result["message"]);
+        $id = $input["NhaXuatBanID"];
+        $tenMoi = trim($input["TenNhaXuatBan"]);
+
+        // Kiểm tra trùng tên (trừ chính ID đang sửa)
+        $existing = $this->model->checkExist($tenMoi);
+        if ($existing && $existing['NhaXuatBanID'] != $id) {
+            jsonResponse(false, "Tên NXB '$tenMoi' đã được sử dụng (ID: " . $existing['NhaXuatBanID'] . ")");
+            return;
+        }
+
+        $ok = $this->model->update($id, $tenMoi);
+        jsonResponse($ok, $ok ? "Cập nhật thành công" : "Lỗi cập nhật");
     }
 
     public function delete() {
@@ -44,9 +70,11 @@ class NhaXuatBanController {
 
         if (empty($input["NhaXuatBanID"])) {
             jsonResponse(false, "Thiếu ID");
+            return;
         }
 
         $ok = $this->model->delete($input["NhaXuatBanID"]);
         jsonResponse($ok, $ok ? "Xóa thành công" : "Xóa thất bại");
     }
 }
+?>

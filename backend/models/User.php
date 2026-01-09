@@ -1,10 +1,56 @@
 <?php
+// backend/models/User.php
+
 require_once __DIR__ . "/../core/Model.php";
 
 class User extends Model
 {
+    // Các thuộc tính public để AuthController có thể gán dữ liệu trực tiếp
+    public $HoTen;
+    public $Email;
+    public $MatKhau;
+    public $SoDienThoai; // Lưu ý: Database của bạn có thể là 'DienThoai' hoặc 'SoDienThoai', hãy kiểm tra kỹ
+    public $DiaChi;
+    public $VaiTro;
+    public $TrangThai;
+
+    public function checkEmailExists($email)
+    {
+        $stmt = $this->db->prepare("SELECT UserID FROM users WHERE Email = ? LIMIT 1");
+        $stmt->execute([$email]);
+        return $stmt->rowCount() > 0;
+    }
+    public function checkPhoneExists($phone)
+    {
+        $stmt = $this->db->prepare("SELECT UserID FROM users WHERE SoDienThoai = ? LIMIT 1");
+        $stmt->execute([$phone]);
+        return $stmt->rowCount() > 0;
+    }
+
     /** ====================================
-     * LẤY TẤT CẢ USER (Sắp xếp theo ID tăng dần)
+     * [QUAN TRỌNG] HÀM TẠO USER (Khớp với AuthController)
+     * ==================================== */
+    public function create()
+{
+
+        $sql = "INSERT INTO users (HoTen, Email, MatKhau, SoDienThoai, VaiTro, TrangThai)
+                VALUES (:HoTen, :Email, :MatKhau, :SoDienThoai, :VaiTro, :TrangThai)";
+
+        $stmt = $this->db->prepare($sql);
+        
+        return $stmt->execute([
+            ":HoTen"       => $this->HoTen,
+            ":Email"       => $this->Email,
+            ":MatKhau"     => $this->MatKhau, 
+            ":SoDienThoai" => $this->SoDienThoai,
+            ":VaiTro"      => $this->VaiTro,
+            ":TrangThai"   => $this->TrangThai
+        ]);
+
+}
+
+    /** ====================================
+     * LẤY TẤT CẢ USER
      * ==================================== */
     public function getAll()
     {
@@ -18,11 +64,11 @@ class User extends Model
     }
 
     /** ====================================
-     * ĐĂNG NHẬP (So sánh trực tiếp, không mã hóa)
+     * ĐĂNG NHẬP (Giữ nguyên logic của bạn)
      * ==================================== */
     public function login($email, $password)
     {
-        // 1. Tìm user theo email
+        // 1. Tìm user
         $stmt = $this->db->prepare("SELECT * FROM users WHERE Email = ? LIMIT 1");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -37,90 +83,26 @@ class User extends Model
             return ["status" => false, "message" => "Tài khoản đã bị khóa"];
         }
 
-        // 4. SO SÁNH MẬT KHẨU (DẠNG THÔ)
-        // Lưu ý: So sánh chính xác từng ký tự (===)
-        if ($password !== $user["MatKhau"]) {
-            return ["status" => false, "message" => "Email hoặc mật khẩu không đúng"];
+        // 4. Kiểm tra mật khẩu
+        // Vì AuthController dùng password_hash, nên đăng nhập cũng phải dùng password_verify
+        // Nếu bạn muốn dùng pass thường, hãy sửa lại dòng này thành: if ($password !== $user["MatKhau"])
+        if (!password_verify($password, $user["MatKhau"])) {
+             return ["status" => false, "message" => "Email hoặc mật khẩu không đúng"];
         }
 
-        // 5. Thành công (Xóa mật khẩu trong kết quả trả về để bảo mật)
+        // 5. Thành công
         unset($user["MatKhau"]);
-        unset($user["reset_token"]);
-
         return ["status" => true, "data" => $user];
     }
-
-    /** ====================================
-     * ĐĂNG KÝ (Lưu trực tiếp, không mã hóa)
-     * ==================================== */
-    public function register($data)
-    {
+    public function updatePasswordByEmail($email, $newHashPass) {
         try {
-            if ($this->emailExists($data['Email'])) {
-                return ["status" => false, "message" => "Email này đã được sử dụng!"];
-            }
-
-            // BỎ MÃ HÓA: Lưu thẳng mật khẩu người dùng nhập
-            $plainPass = $data["MatKhau"]; 
-
-            $sql = "INSERT INTO users (HoTen, Email, MatKhau, DienThoai, DiaChi, VaiTro, TrangThai)
-                    VALUES (:HoTen, :Email, :MatKhau, :DienThoai, :DiaChi, 'KhachHang', 1)";
-
+            $sql = "UPDATE users SET MatKhau = ? WHERE Email = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([
-                ":HoTen"     => $data["HoTen"],
-                ":Email"     => $data["Email"],
-                ":MatKhau"   => $plainPass, // Lưu pass thô
-                ":DienThoai" => $data["DienThoai"] ?? null,
-                ":DiaChi"    => $data["DiaChi"] ?? null
-            ]);
-
-            return ["status" => true, "message" => "Đăng ký thành công!"];
-
-        } catch (PDOException $e) {
-            return ["status" => false, "message" => "Lỗi: " . $e->getMessage()];
+            return $stmt->execute([$newHashPass, $email]);
+        } catch (Exception $e) {
+            return false;
         }
-    }
-
-    /** ====================================
-     * TẠO USER NỘI BỘ (Admin tạo nhân viên)
-     * ==================================== */
-    public function createInternal($data)
-    {
-        if ($this->emailExists($data['Email'])) {
-            return ["status" => false, "message" => "Email đã tồn tại"];
-        }
-
-        // BỎ MÃ HÓA
-        $plainPass = $data["MatKhau"];
-        
-        $sql = "INSERT INTO users (HoTen, Email, MatKhau, VaiTro, TrangThai) 
-                VALUES (?, ?, ?, ?, 1)";
-        
-        $ok = $this->db->prepare($sql)->execute([
-            $data["HoTen"], 
-            $data["Email"], 
-            $plainPass, // Lưu pass thô
-            $data["VaiTro"]
-        ]);
-
-        return $ok 
-            ? ["status" => true, "message" => "Tạo tài khoản thành công"]
-            : ["status" => false, "message" => "Lỗi hệ thống"];
-    }
-
-    // Helper: Check email
-    public function emailExists($email) {
-        $stmt = $this->db->prepare("SELECT 1 FROM users WHERE Email = ?");
-        $stmt->execute([$email]);
-        return $stmt->fetchColumn();
-    }
-    
-    // Helper: Lấy User theo ID
-    public function getById($id) {
-        $stmt = $this->db->prepare("SELECT UserID, HoTen, Email, SoDienThoai, DiaChi, VaiTro FROM users WHERE UserID = ?");
-        $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+
 ?>

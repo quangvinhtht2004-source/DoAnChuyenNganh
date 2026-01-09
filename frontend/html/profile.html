@@ -8,10 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    
-    <style>
-        
-    </style>
 </head>
 
 <body>
@@ -80,14 +76,71 @@
 
     <nav class="main-nav">
         <div class="container nav-container">
+
             <div class="header-filter-wrapper">
                 <div class="header-filter-btn">
                     <i class="fa-solid fa-bars"></i> <span>DANH MỤC SẢN PHẨM</span>
                 </div>
-                 <div class="mega-menu">
+
+                <div class="mega-menu">
                     <ul class="mega-menu-sidebar">
-                        <li class="menu-item" onclick="location.href='index.html'"><span>Về trang chủ để lọc</span></li>
+                        <li class="menu-item active" onmouseover="openFilterTab(event, 'tab-category')">
+                            <span>Thể loại</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-author')">
+                            <span>Tác giả</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-publisher')">
+                            <span>Nhà xuất bản</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-price')">
+                            <span>Mức giá</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onclick="quickFilter('all', 'all')">
+                            <span><strong>Tất cả sản phẩm</strong></span>
+                        </li>
                     </ul>
+
+                    <div class="mega-menu-content">
+                        <div id="tab-category" class="menu-tab-content active">
+                            <h4 class="mega-tab-title">Khám phá theo Thể loại</h4>
+                            <div id="megaCategoryList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải danh mục...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-author" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Tác giả nổi bật</h4>
+                            <div id="megaAuthorList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải tác giả...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-publisher" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Nhà xuất bản uy tín</h4>
+                            <div id="megaPublisherList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải nhà xuất bản...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-price" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Lọc theo mức giá</h4>
+                            <div class="mega-vertical-list">
+                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '0-50000')">
+                                    <strong>Dưới 50.000đ</strong>
+                                </a>
+                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '50000-100000')">
+                                    <strong>50.000đ - 100.000đ</strong>
+                                </a>
+                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '100000-200000')">
+                                    <strong>100.000đ - 200.000đ</strong>
+                                </a>
+                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '200000-max')">
+                                    <strong>Trên 200.000đ</strong>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -97,10 +150,11 @@
                 <a href="index.html?catId=6">TIỂU THUYẾT</a>
                 <a href="index.html?catId=8">GIÁO TRÌNH</a>
                 <a href="index.html?catId=7">KINH DỊ</a>
+                <a href="index.html?catId=9">TRINH THÁM</a>
+                <a href="index.html?catId=3">TÂM LINH</a>
             </div>
         </div>
     </nav>
-
     <main class="container">
         
         <div class="breadcrumb" style="margin-top: 20px;">
@@ -114,7 +168,7 @@
             <aside class="profile-sidebar">
                 <div class="user-brief">
                     <img src="https://via.placeholder.com/150" alt="Avatar" id="sidebarAvatar">
-                    <h3 id="sidebarName">Khách 1</h3>
+                    <h3 id="sidebarName">Khách hàng</h3>
                     <p style="font-size: 12px; color: #888;">Thành viên</p>
                 </div>
                 <div class="profile-menu">
@@ -123,9 +177,6 @@
                     </a>
                     <a href="donhang.html">
                         <i class="fa-solid fa-box-open"></i> Đơn hàng của tôi
-                    </a>
-                    <a href="doimatkhau.html">
-                        <i class="fa-solid fa-lock"></i> Đổi mật khẩu
                     </a>
                     <a href="#" id="logoutBtnSidebar">
                         <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
@@ -141,22 +192,29 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Họ và tên</label>
-                            <input type="text" id="fullname" value="Khách 1">
+                            <input type="text" id="fullname" value="">
                         </div>
 
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="email" id="email" value="KH1@gmail.com" disabled>
+                            <input type="email" id="email" value="" disabled>
                         </div>
 
                         <div class="form-group">
                             <label>Số điện thoại</label>
-                            <input type="text" id="phone" value="0707189144">
+                            <input type="text" id="phone" value="">
                         </div>
                     </div>
                     
-                    <div>
-                        <button type="button" class="btn-save-profile" onclick="updateProfile()">Lưu Thay Đổi</button>
+                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+                        <button type="button" class="btn-save-profile" onclick="updateProfile()" style="min-width: 150px;">
+                            Lưu Thay Đổi
+                        </button>
+                        
+                        <a href="quenmatkhau.html" class="btn-save-profile" 
+                           style="text-decoration: none; background-color: #6c757d; min-width: 150px; text-align: center; display: inline-flex; justify-content: center; align-items: center;">
+                           Quên mật khẩu?
+                        </a>
                     </div>
                 </form>
             </section>
@@ -180,18 +238,37 @@
                     </ul>
                 </div>
                 <div class="footer-col">
+                    <h4 class="footer-heading">DỊCH VỤ</h4>
+                    <ul class="footer-links">
+                        <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+                        <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+                        <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+                        <li><a href="chinhsachbaomat.html">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
                     <h4 class="footer-heading">HỖ TRỢ</h4>
                     <ul class="footer-links">
                         <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
                         <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
                     </ul>
                 </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/ctsvSTU" target="_blank" title="Facebook STU"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com/c/ĐạihọcCôngNghệSàiGònSTU" target="_blank" title="Youtube STU"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/dhcnsg/" target="_blank" title="Instagram STU"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@dhcnsg" target="_blank" title="Tiktok STU"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
                 </div>
+            </div>
         </div>
         <div class="footer-bottom">
             <div class="container">
                 <div class="copyright-text">
-                    © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín.
+                    © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín. <br>
+                    Giấy chứng nhận Đăng ký Kinh doanh số 0304132047 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp.
                 </div>
             </div>
         </div>
@@ -204,7 +281,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Giả lập đăng nhập user từ SQL
+            // Giả lập đăng nhập user từ SQL (cho mục đích test)
             const dbUser = {
                 UserID: 14,
                 HoTen: "Khách 1",
@@ -219,8 +296,11 @@
             }
 
             // Load thông tin user hiện tại
-            const currentUser = JSON.parse(localStorage.getItem("user"));
-            loadUserProfile(currentUser);
+            const userJson = localStorage.getItem("user");
+            if (userJson) {
+                const currentUser = JSON.parse(userJson);
+                loadUserProfile(currentUser);
+            }
 
             // Xử lý đăng xuất sidebar
             document.getElementById("logoutBtnSidebar").addEventListener("click", (e) => {
@@ -233,14 +313,23 @@
 
         function loadUserProfile(user) {
             // Sidebar
-            document.getElementById("sidebarName").textContent = user.HoTen;
-            const avatarUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.HoTen) + "&background=FF6600&color=fff";
-            document.getElementById("sidebarAvatar").src = avatarUrl;
+            const sidebarName = document.getElementById("sidebarName");
+            if(sidebarName) sidebarName.textContent = user.HoTen;
+            
+            const sidebarAvatar = document.getElementById("sidebarAvatar");
+            if(sidebarAvatar) {
+                const avatarUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.HoTen) + "&background=FF6600&color=fff";
+                sidebarAvatar.src = avatarUrl;
+            }
 
-            // Chỉ load 3 trường này
-            document.getElementById("fullname").value = user.HoTen || "";
-            document.getElementById("email").value = user.Email || "";
-            document.getElementById("phone").value = user.SoDienThoai || "";
+            // Form Fields
+            const elName = document.getElementById("fullname");
+            const elEmail = document.getElementById("email");
+            const elPhone = document.getElementById("phone");
+
+            if(elName) elName.value = user.HoTen || "";
+            if(elEmail) elEmail.value = user.Email || "";
+            if(elPhone) elPhone.value = user.SoDienThoai || "";
         }
 
         function updateProfile() {
@@ -248,18 +337,20 @@
             if (!userJson) return;
             let user = JSON.parse(userJson);
 
-            // Cập nhật dữ liệu mới (chỉ Họ tên và SĐT, Email thường không cho đổi ở đây)
-            const newData = {
-                ...user,
-                HoTen: document.getElementById("fullname").value.trim(),
-                SoDienThoai: document.getElementById("phone").value.trim()
-            };
+            // Cập nhật dữ liệu mới
+            const newName = document.getElementById("fullname").value.trim();
+            const newPhone = document.getElementById("phone").value.trim();
 
-            // Validation đơn giản
-            if (!newData.HoTen || !newData.SoDienThoai) {
+            if (!newName || !newPhone) {
                 alert("Họ tên và Số điện thoại không được để trống!");
                 return;
             }
+
+            const newData = {
+                ...user,
+                HoTen: newName,
+                SoDienThoai: newPhone
+            };
 
             localStorage.setItem("user", JSON.stringify(newData));
             alert("Cập nhật thông tin thành công!");

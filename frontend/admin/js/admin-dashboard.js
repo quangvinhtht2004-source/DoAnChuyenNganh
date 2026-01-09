@@ -129,7 +129,7 @@ function renderRecentOrders(orders) {
     const tableBody = document.getElementById("recentOrdersTable");
     if(!tableBody) return;
     
-    const sortedOrders = [...orders].sort((a, b) => b.DonHangID - a.DonHangID);
+    const sortedOrders = [...orders].sort((a, b) => a.DonHangID - b.DonHangID);
     const recentOrders = sortedOrders.slice(0, 5);
 
     const statusMap = { 

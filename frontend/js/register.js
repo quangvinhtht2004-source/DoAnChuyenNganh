@@ -2,175 +2,228 @@
 
 document.addEventListener("DOMContentLoaded", function() {
     
-    // BIẾN TOÀN CỤC
-    let systemOTP = null;      // Lưu mã OTP hiện tại
-    let otpTimer = null;       // Lưu bộ đếm giờ để có thể reset nếu cần
+    // --- HÀM HỖ TRỢ ĐƯỜNG DẪN API ---
+    function getApiUrl(endpoint) {
+    return `http://127.0.0.1/WebsiteBanSach/backend/${endpoint}`;
+}
 
-    // --- 1. XỬ LÝ NÚT GỬI OTP ---
+    // --- 1. XỬ LÝ NÚT GỬI MÃ OTP ---
     const btnSendOTP = document.getElementById("btnSendOTP");
-    const emailInput = document.getElementById("email");
     const otpMsg = document.getElementById("otpMessage");
+    let otpTimer = null; 
 
     if(btnSendOTP) {
-        btnSendOTP.addEventListener("click", function() {
+        btnSendOTP.addEventListener("click", async function() {
+            const emailInput = document.getElementById("email");
+            const phoneInput = document.getElementById("phone");
+
             const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-            // 1. Validate Email
-            if (!email) {
-                alert("Vui lòng nhập Email để nhận mã OTP!");
+            // Validate
+            if (!email) { 
+                alert("Vui lòng nhập Email để nhận mã OTP!"); 
                 emailInput.focus();
+                return; 
+            }
+            if (!emailRegex.test(email)) { 
+                alert("Email không đúng định dạng!"); 
+                emailInput.focus();
+                return; 
+            }
+
+            if (!phone) {
+                alert("Vui lòng nhập Số điện thoại để hệ thống kiểm tra!"); 
+                phoneInput.focus(); 
                 return;
             }
-            if (!emailRegex.test(email)) {
-                alert("Email không hợp lệ!");
-                emailInput.focus();
-                return;
-            }
 
-            // 2. Tạo mã OTP ngẫu nhiên
-            systemOTP = Math.floor(100000 + Math.random() * 900000).toString();
-            console.log("System OTP:", systemOTP); // Log ra console để debug
+            // Hiệu ứng loading
+            btnSendOTP.innerText = "Đang gửi...";
+            btnSendOTP.disabled = true;
+            btnSendOTP.style.opacity = "0.1";
+            if(otpMsg) otpMsg.style.display = "none";
 
-            // 3. Thông báo cho người dùng (Giả lập đã gửi mail)
-            // Lưu ý: Vì không gửi mail thật được nên mình hiển thị mã ở đây để bạn test
-            alert(`Hệ thống đã gửi mã OTP đến email: ${email}\n\n(Mã dùng thử của bạn là: ${systemOTP})`);
+            try {
+                const url = getApiUrl('auth/send-otp');
+                console.log("Calling API:", url);
 
-            // 4. Xử lý giao diện & Đếm ngược 60s
-            otpMsg.style.display = "block";
-            otpMsg.style.color = "green";
-            otpMsg.innerText = `Mã OTP đã được gửi. Vui lòng kiểm tra email.`;
-            
-            btnSendOTP.disabled = true; // Khóa nút không cho bấm liên tục
-            let timeLeft = 60;
-
-            // Xóa timer cũ nếu có
-            if(otpTimer) clearInterval(otpTimer);
-
-            // Bắt đầu đếm ngược
-            otpTimer = setInterval(() => {
-                btnSendOTP.innerText = `Gửi lại (${timeLeft}s)`;
-                timeLeft--;
-
-                // --- LOGIC HẾT HẠN (RESET) ---
-                if (timeLeft < 0) {
-                    clearInterval(otpTimer);           // Dừng đồng hồ
-                    systemOTP = null;                  // Xóa mã OTP hệ thống (Hết hạn)
+               
+                const res = await fetch(url, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        Email: email ,
+                        DienThoai: phone
+                    }),
                     
-                    btnSendOTP.disabled = false;       // Mở lại nút
-                    btnSendOTP.innerText = "Lấy lại mã OTP";
                     
-                    otpMsg.style.color = "red";
-                    otpMsg.innerText = "Mã OTP đã hết hạn. Vui lòng lấy mã mới.";
-                    alert("Mã OTP đã hết hạn! Vui lòng bấm gửi lại để lấy mã mới.");
+                    credentials: 'include' 
+                });
+
+                // Đọc text trước để bắt lỗi PHP Fatal Error
+                const rawText = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    console.error("LỖI SERVER (HTML):", rawText);
+                    throw new Error("Lỗi Server: " + rawText.substring(0, 100));
                 }
-            }, 1000);
+
+                if (data.status) {
+                   alert("✅ Thông tin hợp lệ! Mã OTP đã được gửi.");
+                    
+                    if(otpMsg) {
+                        otpMsg.style.display = "block";
+                        otpMsg.style.color = "green";
+                        otpMsg.innerText = `Đã gửi mã tới ${email}. Hết hạn sau 2 phút.`;
+                    }
+
+                    // Đếm ngược 60s
+                    startCountdown(60);
+                } else {
+                    alert("⚠️ " + data.message);
+                    resetButton();
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("❌ Lỗi kết nối: " + e.message);
+                resetButton();
+            }
         });
     }
+    function startCountdown(seconds) {
+        let timeLeft = seconds;
+        if (otpTimer) clearInterval(otpTimer);
 
-    // --- 2. XỬ LÝ SUBMIT FORM ĐĂNG KÝ ---
+        otpTimer = setInterval(() => {
+            btnSendOTP.innerText = `Gửi lại (${timeLeft}s)`;
+            timeLeft--;
+            
+            if (timeLeft < 0) {
+                clearInterval(otpTimer);
+                resetButton();
+                btnSendOTP.innerText = "Lấy lại mã";
+                if(otpMsg) {
+                    otpMsg.style.color = "red";
+                    otpMsg.innerText = "Mã OTP đã hết hạn. Vui lòng lấy mã mới.";
+                }
+            }
+        }, 1000);
+    }
+    function resetButton() {
+        btnSendOTP.disabled = false;
+        btnSendOTP.style.opacity = "1";
+        if(btnSendOTP.innerText.includes("Gửi lại") || btnSendOTP.innerText.includes("Đang")) {
+            btnSendOTP.innerText = "Lấy mã";
+        }
+    }
+
+    // --- 2. XỬ LÝ ĐĂNG KÝ ---
     const registerForm = document.getElementById("registerForm");
 
     if (registerForm) {
         registerForm.addEventListener("submit", async function(e) {
             e.preventDefault();
 
-            // --- A. LẤY DỮ LIỆU ---
+            // A. Lấy dữ liệu
             const terms = document.getElementById("terms");
             const fullName = document.getElementById("fullName").value.trim();
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
-            let phone = document.getElementById("phone").value.trim().replace(/\s/g, ''); 
-            const userOtpInput = document.getElementById("otpInput").value.trim();
+            const otpInput = document.getElementById("otpInput");
+            const otp = otpInput ? otpInput.value.trim() : "";
+            const phone = document.getElementById("phone").value.trim().replace(/\s/g, ''); 
 
-            // --- B. VALIDATION ---
-
-            // 1. Kiểm tra OTP
-            if (!systemOTP) {
-                // Trường hợp chưa lấy mã HOẶC mã đã hết hạn (systemOTP bị set về null)
-                alert("Vui lòng lấy mã OTP hoặc mã OTP đã hết hạn!");
-                return;
-            }
-            
-            if (!userOtpInput) {
-                alert("Vui lòng nhập mã OTP!");
-                document.getElementById("otpInput").focus();
-                return;
+            // B. Validation
+            if (terms && !terms.checked) { alert("Bạn cần đồng ý với Điều khoản!"); return; }
+            if (!fullName || !email || !phone || !password) { alert("Vui lòng nhập đầy đủ thông tin!"); return; }
+            if (!otp) { 
+                alert("Vui lòng nhập mã OTP đã gửi về mail!"); 
+                if(otpInput) otpInput.focus();
+                return; 
             }
 
-            if (userOtpInput !== systemOTP) {
-                alert("Mã OTP không chính xác! Vui lòng kiểm tra lại.");
-                return;
-            }
+            const btnSubmit = document.getElementById("btnSubmit");
+            const originalText = btnSubmit.innerText;
+            btnSubmit.innerText = "Đang xử lý...";
+            btnSubmit.disabled = true;
 
-            // 2. Các validation thông tin khác
-            if (terms && !terms.checked) {
-                alert("Bạn cần đồng ý với Điều khoản & Điều kiện!");
-                return;
-            }
-            if (!fullName || !email || !phone || !password) {
-                alert("Vui lòng nhập đầy đủ thông tin!");
-                return;
-            }
-            const phoneRegex = /^(0)(3[2-9]|5[2|6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
-            if (!phoneRegex.test(phone)) {
-                alert("Số điện thoại không hợp lệ!");
-                return;
-            }
-            if (password.length < 6) {
-                alert("Mật khẩu phải có ít nhất 6 ký tự!");
-                return;
-            }
-
-            // --- C. GỬI DỮ LIỆU (ĐĂNG KÝ THÀNH CÔNG) ---
-            const data = {
+            // Payload gửi đi: Key phải khớp với AuthController::register()
+            const payload = {
                 HoTen: fullName,
                 Email: email,
                 DienThoai: phone,
                 MatKhau: password,
-                VaiTro: 'KhachHang'
+                otp: otp
             };
 
             try {
-                const btnSubmit = document.getElementById("btnSubmit");
-                btnSubmit.innerText = "Đang xử lý...";
-                btnSubmit.disabled = true;
+                const url = getApiUrl('auth/register');
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    credentials: 'include' // <--- QUAN TRỌNG: Gửi kèm Session ID chứa OTP
+                });
 
-                // Giả lập gọi API đăng ký
-                setTimeout(() => {
-                    // Lưu localstorage để demo
-                    const newUser = {
-                        UserID: Date.now(),
-                        HoTen: fullName,
-                        Email: email,
-                        SoDienThoai: phone,
-                        VaiTro: 'KhachHang',
-                        DiaChi: ""
-                    };
-                    localStorage.setItem("user", JSON.stringify(newUser));
+                const rawText = await res.text();
+                let result;
+                try {
+                    result = JSON.parse(rawText);
+                } catch(err) {
+                     throw new Error("Lỗi Server: " + rawText.substring(0, 150));
+                }
 
-                    alert("Đăng ký tài khoản thành công!");
-                    window.location.href = "profile.html"; 
-                }, 1000);
+                if (result.status) {
+                    alert("🎉 Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+                    window.location.href = "dangnhap.html";
+                } else {
+                    // Xử lý thông báo lỗi
+                    // Sửa nhẹ: Ưu tiên hiển thị lỗi gốc từ server trước để dễ debug
+                    let msg = result.message || "Đăng ký thất bại";
+                    
+                    // Nếu cần việt hóa đè lên thì bỏ comment đoạn dưới, nhưng cẩn thận nó che mất lỗi thật
+                    /*
+                    let lowerMsg = msg.toLowerCase();
+                    if (lowerMsg.includes("otp")) msg = "Mã OTP không chính xác hoặc đã hết hạn!";
+                    else if (lowerMsg.includes("email")) msg = "Email này đã được sử dụng!";
+                    */
+                    
+                    alert("⚠️ " + msg);
+                }
 
             } catch (error) {
                 console.error(error);
-                alert("Lỗi hệ thống.");
-                document.getElementById("btnSubmit").disabled = false;
+                alert("❌ " + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = originalText;
             }
         });
     }
 
-    // 3. TOGGLE MẬT KHẨU
+    // 3. TOGGLE MẬT KHẨU (Giữ nguyên)
     const toggleBtn = document.getElementById("togglePasswordRegister");
     const passInput = document.getElementById("password");
+    
     if(toggleBtn && passInput) {
         toggleBtn.addEventListener("click", function() {
             const type = passInput.getAttribute("type") === "password" ? "text" : "password";
             passInput.setAttribute("type", type);
+            
             const icon = this.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            if (type === 'text') {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
         });
     }
 });

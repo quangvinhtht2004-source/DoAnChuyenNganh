@@ -1,4 +1,8 @@
-// Biến toàn cục chứa dữ liệu
+// ================================================================
+// 1. BIẾN TOÀN CỤC & KHỞI TẠO
+// ================================================================
+
+// Biến chứa dữ liệu tải từ server
 let globalSearchData = {
     books: [],
     categories: [],
@@ -6,45 +10,49 @@ let globalSearchData = {
     publishers: [] 
 };
 
+// Sự kiện khi trang web tải xong
 document.addEventListener("DOMContentLoaded", () => {
-    setupAuth(); // Thiết lập Auth chung cho mọi trang
+    setupAuth(); // Thiết lập Auth (Đăng nhập/Đăng xuất)
 
-    // Tải dữ liệu ban đầu (Tác giả, thể loại...) trước khi render
+    // Tải dữ liệu hệ thống trước khi chạy logic chính
     preloadSearchData().then(() => {
         
-        // --- GỌI HÀM LOAD DỮ LIỆU VÀO MEGA MENU (Chạy mọi trang) ---
-        loadMegaMenuData(); 
+        loadMegaMenuData();  // Dữ liệu cho Menu Danh mục
+        loadFilterPanelData(); // Dữ liệu cho Bộ lọc ngang
+        setupFilterToggle();   // Sự kiện nút đóng/mở bộ lọc
         
-        // --- LOGIC ROUTING (QUAN TRỌNG: Kiểm tra trang hiện tại) ---
+        // --- LOGIC ĐIỀU HƯỚNG THEO TRANG ---
         const path = window.location.pathname;
 
         if (path.includes("sachmoi.html")) {
-            // Nếu đang ở trang Sách Mới -> Load 20 cuốn mới
             loadPageSachMoi();
         } 
         else if (path.includes("banchay.html")) {
-            // Nếu đang ở trang Bán Chạy -> Load 20 cuốn bán chạy
             loadPageBanChay();
         } 
         else if (path.includes("index.html") || path.endsWith("/")) {
-            // Nếu đang ở Trang Chủ -> Load layout trang chủ
-            loadHotSales();     // Load 5 cuốn bán chạy
-            loadNewBooks();     // Load 5 cuốn mới
-            checkUrlAndFilter(); // Kiểm tra filter URL
+            // Logic riêng cho Trang Chủ
+            loadHotSales();     
+            loadNewBooks();     
+            checkUrlAndFilter(); // Kiểm tra URL để lọc
         }
-        // Các trang khác (chi tiết, giỏ hàng) tự có logic riêng hoặc không cần load list sách
     });
     
-    // Sự kiện tìm kiếm (Chạy mọi trang)
+    // Thiết lập sự kiện cho ô tìm kiếm
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
+        // Sự kiện nhập liệu -> Hiển thị gợi ý
         searchInput.addEventListener("input", handleSearchInput); 
+        
+        // Sự kiện bấm Enter -> Chuyển trang tìm kiếm
         searchInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
                 handleSearch(); 
             }
         });
+
+        // Ẩn gợi ý khi click ra ngoài
         document.addEventListener('click', function(e) {
             const suggestions = document.getElementById('searchSuggestions');
             if (suggestions && !searchInput.contains(e.target) && !suggestions.contains(e.target)) {
@@ -54,23 +62,101 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* ==================================================================
-   PHẦN 1: LOGIC MEGA MENU
-   ================================================================== */
 
-// 1. Hàm chuyển Tab khi rê chuột vào Sidebar
+// ================================================================
+// 2. LOGIC BỘ LỌC NGANG (TOGGLE FILTER)
+// ================================================================
+
+// Thiết lập sự kiện click cho nút "BỘ LỌC TÌM KIẾM"
+function setupFilterToggle() {
+    const btn = document.getElementById('btnToggleFilter');
+    const panel = document.getElementById('filterPanel');
+    const arrow = document.getElementById('filterArrow');
+
+    if(btn && panel) {
+        btn.addEventListener('click', () => {
+            const currentDisplay = window.getComputedStyle(panel).display;
+            
+            if (currentDisplay === "none") {
+                panel.style.display = "block";
+                btn.classList.add('active'); 
+                if(arrow) arrow.className = "fa-solid fa-chevron-up";
+            } else {
+                panel.style.display = "none";
+                btn.classList.remove('active');
+                if(arrow) arrow.className = "fa-solid fa-chevron-down";
+            }
+        });
+    }
+}
+
+// Đổ dữ liệu vào 3 cột bộ lọc (Thể loại, Tác giả, NXB)
+function loadFilterPanelData() {
+    renderFilterColumn(globalSearchData.categories, "filterCategoryList", "cat");
+    renderFilterColumn(globalSearchData.authors, "filterAuthorList", "author");
+    renderFilterColumn(globalSearchData.publishers, "filterPublisherList", "pub");
+}
+
+// Hàm hỗ trợ render danh sách (dùng chung cho 3 cột)
+function renderFilterColumn(dataList, containerId, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    if (!dataList || dataList.length === 0) {
+        container.innerHTML = '<li>Đang cập nhật...</li>';
+        return;
+    }
+
+    let html = '';
+    // Thêm mục "Xem tất cả"
+    html += `<li><a href="javascript:void(0)" onclick="quickFilter('${type}', 'all')" style="font-weight:700; color:#FF6600;">Xem tất cả</a></li>`;
+
+    dataList.forEach(item => {
+        let name, id;
+        if (type === 'cat') { name = item.TenTheLoai; id = item.TheLoaiID; }
+        else if (type === 'author') { name = item.TenTacGia; id = item.TacGiaID; }
+        else if (type === 'pub') { name = item.TenNhaXuatBan; id = item.NhaXuatBanID; }
+
+        html += `<li><a href="javascript:void(0)" onclick="quickFilter('${type}', '${id}')">${name}</a></li>`;
+    });
+    container.innerHTML = html;
+}
+
+
+// ================================================================
+// 3. LOGIC MEGA MENU (MENU DANH MỤC TRÊN THANH NAV)
+// ================================================================
+
+function loadMegaMenuData() {
+    renderMegaGrid(globalSearchData.categories, "megaCategoryList", "cat");
+    renderMegaGrid(globalSearchData.authors, "megaAuthorList", "author");
+    renderMegaGrid(globalSearchData.publishers, "megaPublisherList", "pub");
+}
+
+function renderMegaGrid(dataList, containerId, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    let html = '';
+    dataList.forEach(item => {
+        let name, id;
+        if (type === 'cat') { name = item.TenTheLoai; id = item.TheLoaiID; }
+        else if (type === 'author') { name = item.TenTacGia; id = item.TacGiaID; }
+        else if (type === 'pub') { name = item.TenNhaXuatBan; id = item.NhaXuatBanID; }
+        html += `<a href="javascript:void(0)" class="mega-link-item" onclick="quickFilter('${type}', '${id}')">${name}</a>`;
+    });
+    container.innerHTML = html;
+}
+
 function openFilterTab(evt, tabName) {
     var tabContent = document.getElementsByClassName("menu-tab-content");
     for (var i = 0; i < tabContent.length; i++) {
         tabContent[i].style.display = "none";
         tabContent[i].classList.remove("active");
     }
-
     var menuItems = document.querySelectorAll(".mega-menu-sidebar .menu-item");
     for (var i = 0; i < menuItems.length; i++) {
         menuItems[i].classList.remove("active");
     }
-
     const selectedTab = document.getElementById(tabName);
     if(selectedTab) {
         selectedTab.style.display = "block";
@@ -79,136 +165,96 @@ function openFilterTab(evt, tabName) {
     evt.currentTarget.classList.add("active");
 }
 
-// 2. Load dữ liệu vào các Tab
-function loadMegaMenuData() {
-    renderMegaGrid(globalSearchData.categories, "megaCategoryList", "cat");
-    renderMegaGrid(globalSearchData.authors, "megaAuthorList", "author");
-    renderMegaGrid(globalSearchData.publishers, "megaPublisherList", "pub");
-}
 
-// Hàm render danh sách dạng dọc
-function renderMegaGrid(dataList, containerId, type) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+// ================================================================
+// 4. CHỨC NĂNG LỌC SẢN PHẨM (QUICK FILTER)
+// ================================================================
 
-    if (!dataList || dataList.length === 0) {
-        container.innerHTML = '<p class="loading-text">Chưa có dữ liệu</p>';
-        return;
-    }
-
-    let html = '';
-    dataList.forEach(item => {
-        let name, id;
-        if (type === 'cat') { name = item.TenTheLoai; id = item.TheLoaiID; }
-        else if (type === 'author') { name = item.TenTacGia; id = item.TacGiaID; }
-        else if (type === 'pub') { name = item.TenNhaXuatBan; id = item.NhaXuatBanID; }
-
-        html += `<a href="javascript:void(0)" class="mega-link-item" onclick="quickFilter('${type}', '${id}')">
-                    ${name}
-                 </a>`;
-    });
-    container.innerHTML = html;
-}
-
-// 3. HÀM LỌC SẢN PHẨM KHI CLICK
 async function quickFilter(type, value) {
-    // Nếu đang ở trang con (sachmoi/banchay), chuyển về index để lọc
+    // Nếu đang ở trang con, chuyển hướng về trang chủ để lọc
     if (!window.location.pathname.includes("index.html") && !window.location.pathname.endsWith("/")) {
-        // Chuyển hướng về trang chủ kèm tham số (nếu cần xử lý phức tạp hơn thì dùng localStorage)
-        // Ở đây demo đơn giản: nếu type là cat thì chuyển link, còn lại reload về index
-        if(type === 'cat') {
-            window.location.href = `index.html?catId=${value}`;
-            return;
-        } else {
-            // Với các loại khác, tạm thời chuyển về index (cần nâng cấp logic nếu muốn lọc author từ trang con)
-            window.location.href = `index.html`; 
-            return;
-        }
+        if(type === 'cat') { window.location.href = `index.html?catId=${value}`; } 
+        else if(type === 'author') { window.location.href = `index.html?authorId=${value}`; }
+        else if(type === 'pub') { window.location.href = `index.html?pubId=${value}`; }
+        else if(type === 'all') { window.location.href = `index.html?view=all`; }
+        else { window.location.href = `index.html`; }
+        return;
     }
 
     const homeSections = document.getElementById("homeSections");
     const resultSection = document.getElementById("searchResultSection");
     const resultContainer = document.getElementById("searchResultContainer");
     
+    // Ẩn trang chủ, hiện kết quả lọc
     if(homeSections) homeSections.style.display = "none";
     if(resultSection) resultSection.style.display = "block";
     
-    resultContainer.innerHTML = `
-        <div style="grid-column:span 5; text-align:center; padding:50px;">
-            <i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:#FF6600"></i>
-            <p style="margin-top:10px; color:#666">Đang tìm kiếm sách...</p>
-        </div>`;
-
     resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    resultContainer.innerHTML = `<div style="grid-column:span 5; text-align:center; padding:50px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:#FF6600"></i><p style="margin-top:10px;">Đang lọc...</p></div>`;
 
     try {
         let finalBooks = [];
         let filterTitle = "";
         
+        // Lấy danh sách sách từ API
+        const resBooks = await fetch(AppConfig.getUrl("sach"));
+        const dataBooks = await resBooks.json();
+        const allBooks = dataBooks.data || [];
+
+        // --- XỬ LÝ LỌC ---
         if (type === 'cat') {
             if (value === 'all') {
-                const res = await fetch(AppConfig.getUrl("sach"));
-                const data = await res.json();
-                finalBooks = data.data || [];
+                finalBooks = allBooks;
                 filterTitle = "TẤT CẢ DANH MỤC";
             } else {
-                const res = await fetch(AppConfig.getUrl(`sach/loc-theo-danh-muc?ids=${value}`));
-                const data = await res.json();
-                finalBooks = data.data || [];
+                const resCat = await fetch(AppConfig.getUrl(`sach/loc-theo-danh-muc?ids=${value}`));
+                const dataCat = await resCat.json();
+                finalBooks = dataCat.data || [];
                 const catObj = globalSearchData.categories.find(c => c.TheLoaiID == value);
                 filterTitle = catObj ? `DANH MỤC: ${catObj.TenTheLoai.toUpperCase()}` : "KẾT QUẢ LỌC";
             }
         } 
-        else {
-            const res = await fetch(AppConfig.getUrl("sach"));
-            const data = await res.json();
-            const allBooks = data.data || [];
-
-            if (type === 'author') {
-                if (value === 'all') { finalBooks = allBooks; filterTitle = "TẤT CẢ TÁC GIẢ"; }
-                else {
-                    finalBooks = allBooks.filter(b => b.TacGiaID == value);
-                    const obj = globalSearchData.authors.find(a => a.TacGiaID == value);
-                    filterTitle = obj ? `TÁC GIẢ: ${obj.TenTacGia.toUpperCase()}` : "KẾT QUẢ LỌC";
-                }
-            }
-            else if (type === 'pub') {
-                if (value === 'all') { finalBooks = allBooks; filterTitle = "TẤT CẢ NXB"; }
-                else {
-                    finalBooks = allBooks.filter(b => b.NhaXuatBanID == value);
-                    const obj = globalSearchData.publishers.find(p => p.NhaXuatBanID == value);
-                    filterTitle = obj ? `NXB: ${obj.TenNhaXuatBan.toUpperCase()}` : "KẾT QUẢ LỌC";
-                }
-            }
-            else if (type === 'price') {
-                const [minStr, maxStr] = value.split('-');
-                const min = parseInt(minStr);
-                const max = maxStr === 'max' ? Infinity : parseInt(maxStr);
-                
-                finalBooks = allBooks.filter(book => {
-                    const gia = book.GiaBan || (book.Gia * (1 - (book.PhanTramGiam / 100)));
-                    return gia >= min && gia < max;
-                });
-                filterTitle = "KẾT QUẢ LỌC THEO GIÁ";
-            }
-            else { 
-                finalBooks = allBooks;
-                filterTitle = "TẤT CẢ SẢN PHẨM";
+        else if (type === 'all') {
+            // Lọc lấy sách đang hoạt động (TrangThai == 1)
+            finalBooks = allBooks.filter(b => b.TrangThai == 1);
+            filterTitle = "TẤT CẢ SẢN PHẨM";
+        }
+        else if (type === 'author') {
+            if (value === 'all') { 
+                finalBooks = allBooks; 
+                filterTitle = "TẤT CẢ TÁC GIẢ"; 
+            } else {
+                finalBooks = allBooks.filter(b => b.TacGiaID == value);
+                const obj = globalSearchData.authors.find(a => a.TacGiaID == value);
+                filterTitle = obj ? `TÁC GIẢ: ${obj.TenTacGia.toUpperCase()}` : "KẾT QUẢ LỌC";
             }
         }
+        else if (type === 'pub') {
+            if (value === 'all') { 
+                finalBooks = allBooks; 
+                filterTitle = "TẤT CẢ NXB"; 
+            } else {
+                finalBooks = allBooks.filter(b => b.NhaXuatBanID == value);
+                const obj = globalSearchData.publishers.find(p => p.NhaXuatBanID == value);
+                filterTitle = obj ? `NXB: ${obj.TenNhaXuatBan.toUpperCase()}` : "KẾT QUẢ LỌC";
+            }
+        }
+        else if (type === 'price') {
+            const [minStr, maxStr] = value.split('-');
+            const min = parseInt(minStr);
+            const max = maxStr === 'max' ? Infinity : parseInt(maxStr);
+            finalBooks = allBooks.filter(book => {
+                const gia = book.GiaBan || (book.Gia * (1 - (book.PhanTramGiam / 100)));
+                return gia >= min && gia < max;
+            });
+            filterTitle = `GIÁ TỪ ${formatMoney(min)} - ${max === Infinity ? 'TRỞ LÊN' : formatMoney(max)}`;
+        }
 
+        // Cập nhật tiêu đề và hiển thị sách
         document.querySelector('.section-title').innerText = `${filterTitle} (${finalBooks.length} sách)`;
-        
-        if (finalBooks.length > 0) {
-            renderBooksToHTML(finalBooks, "searchResultContainer");
-        } else {
-            resultContainer.innerHTML = `
-                <div style="grid-column:span 5; text-align:center; padding: 40px;">
-                    <i class="fa-solid fa-box-open" style="font-size:40px; color:#ddd; margin-bottom:15px;"></i>
-                    <p>Không tìm thấy sách nào phù hợp.</p>
-                    <button onclick="location.reload()" style="margin-top:10px; padding:5px 15px; cursor:pointer; background:#333; color:white; border:none; border-radius:4px;">Xem tất cả</button>
-                </div>`;
-        }
+        if (finalBooks.length > 0) renderBooksToHTML(finalBooks, "searchResultContainer");
+        else resultContainer.innerHTML = `<div style="grid-column:span 5; text-align:center; padding: 40px;"><p>Không tìm thấy sách nào.</p><button onclick="location.reload()" style="padding:5px 15px;">Xem tất cả</button></div>`;
 
     } catch (err) {
         console.error(err);
@@ -216,25 +262,39 @@ async function quickFilter(type, value) {
     }
 }
 
-// Xử lý URL Param
+// Kiểm tra URL để tự động lọc khi vào trang
 function checkUrlAndFilter() {
     const urlParams = new URLSearchParams(window.location.search);
+    
     const catId = urlParams.get('catId');
+    const authorId = urlParams.get('authorId');
+    const pubId = urlParams.get('pubId');
+    const view = urlParams.get('view'); 
+    
     if (catId) {
         quickFilter('cat', catId);
+    } 
+    else if (authorId) {
+        quickFilter('author', authorId);
+    }
+    else if (pubId) {
+        quickFilter('pub', pubId);
+    }
+    else if (view === 'all') { 
+        quickFilter('all', 'all');
     }
 }
 
-/* ==================================================================
-   PHẦN 2: CÁC HÀM CƠ BẢN & AUTH
-   ================================================================== */
+
+// ================================================================
+// 5. CÁC HÀM XỬ LÝ AUTH & TẢI DỮ LIỆU CHUNG
+// ================================================================
 
 function setupAuth() {
     const loginBtnGroup = document.getElementById('loginBtn');       
     const userInfoGroup = document.getElementById('userInfoContainer'); 
     const userNameSpan = document.getElementById('userName');
     const logoutBtn = document.getElementById('logoutBtn');
-
     const userJson = localStorage.getItem("user");
 
     if (userJson) {
@@ -252,10 +312,6 @@ function setupAuth() {
             e.preventDefault(); 
             localStorage.removeItem("user");
             alert("Đăng xuất thành công!");
-            if(userInfoGroup) userInfoGroup.style.display = 'none';
-            if(loginBtnGroup) loginBtnGroup.style.display = 'flex';
-            const cartBadge = document.getElementById('cartBadge');
-            if(cartBadge) cartBadge.textContent = '0';
             window.location.href = "index.html";
         });
     }
@@ -269,7 +325,6 @@ async function preloadSearchData() {
             fetch(AppConfig.getUrl("tacgia")),
             fetch(AppConfig.getUrl("nhaxuatban"))
         ]);
-
         const dataBooks = await resBooks.json();
         const dataCats = await resCats.json();
         const dataAuthors = await resAuthors.json();
@@ -279,226 +334,326 @@ async function preloadSearchData() {
         if (dataCats.status) globalSearchData.categories = dataCats.data;
         if (dataAuthors.status) globalSearchData.authors = dataAuthors.data;
         if (dataPubs.status) globalSearchData.publishers = dataPubs.data;
-
-    } catch (err) {
-        console.error("Lỗi tải dữ liệu hệ thống:", err);
-    }
+    } catch (err) { console.error("Lỗi tải dữ liệu hệ thống:", err); }
 }
 
-// Xử lý Search Box
+
+// ================================================================
+// 6. XỬ LÝ TÌM KIẾM (SEARCH BOX) - CẬP NHẬT MỚI: GIAO DIỆN 2 PHẦN
+// ================================================================
+
 function handleSearchInput(e) {
     const keyword = e.target.value.trim();
     const suggestionBox = document.getElementById('searchSuggestions');
     
-    if (keyword.length < 1) {
-        suggestionBox.classList.remove('show');
+    // 1. Nếu không có từ khóa -> Ẩn gợi ý
+    if (keyword.length < 1) { 
+        suggestionBox.classList.remove('show'); 
         suggestionBox.innerHTML = '';
-        return;
+        return; 
     }
 
     const searchKey = removeVietnameseTones(keyword.toLowerCase());
-    const matchedCats = globalSearchData.categories.filter(cat => removeVietnameseTones(cat.TenTheLoai.toLowerCase()).includes(searchKey));
-    const matchedBooks = globalSearchData.books.filter(book => {
-        const nameMatch = removeVietnameseTones(book.TenSach.toLowerCase()).includes(searchKey);
-        const authorObj = globalSearchData.authors.find(a => a.TacGiaID == book.TacGiaID);
-        const authorName = authorObj ? removeVietnameseTones(authorObj.TenTacGia.toLowerCase()) : "";
-        return nameMatch || authorName.includes(searchKey);
-    }).slice(0, 5);
+    
+    // --- PHẦN A: TÌM CÁC TỪ KHÓA LIÊN QUAN (TAGS) ---
+    // Bao gồm: Thể loại, Tác giả, Nhà xuất bản
+    let suggestionTags = [];
 
-    let html = '';
-    if (matchedCats.length > 0) {
-        html += `<div class="suggestion-group"><div class="suggestion-group-title">Danh mục</div>`;
-        matchedCats.forEach(cat => {
-            html += `<a href="index.html?catId=${cat.TheLoaiID}" class="suggestion-item"><i class="fa-solid fa-folder-open" style="color:#999; width:20px;"></i><span>${highlightText(cat.TenTheLoai, keyword)}</span></a>`;
+    // Tìm trong THỂ LOẠI
+    globalSearchData.categories.forEach(c => {
+        if(removeVietnameseTones(c.TenTheLoai.toLowerCase()).includes(searchKey)) {
+            suggestionTags.push({ text: c.TenTheLoai, url: `index.html?catId=${c.TheLoaiID}` });
+        }
+    });
+
+    // Tìm trong TÁC GIẢ
+    globalSearchData.authors.forEach(a => {
+        if(removeVietnameseTones(a.TenTacGia.toLowerCase()).includes(searchKey)) {
+            suggestionTags.push({ text: a.TenTacGia, url: `index.html?authorId=${a.TacGiaID}` });
+        }
+    });
+
+    // Tìm trong NHÀ XUẤT BẢN (Giới hạn hiển thị ít để ưu tiên không gian)
+    globalSearchData.publishers.forEach(p => {
+        if(removeVietnameseTones(p.TenNhaXuatBan.toLowerCase()).includes(searchKey)) {
+            suggestionTags.push({ text: p.TenNhaXuatBan, url: `index.html?pubId=${p.NhaXuatBanID}` });
+        }
+    });
+
+    // Giới hạn số lượng Tags (Ví dụ tối đa 6 tags)
+    suggestionTags = suggestionTags.slice(0, 6);
+
+
+    // --- PHẦN B: TÌM SẢN PHẨM CỤ THỂ (BOOKS) ---
+    let foundBooks = [];
+    globalSearchData.books.forEach(b => {
+        // Tìm theo tên sách
+        if(removeVietnameseTones(b.TenSach.toLowerCase()).includes(searchKey)) {
+            foundBooks.push(b);
+        }
+    });
+
+    // Giới hạn hiển thị 5 sách để khung không quá dài
+    foundBooks = foundBooks.slice(0, 5);
+
+
+    // --- PHẦN C: RENDER HTML ---
+    if (suggestionTags.length === 0 && foundBooks.length === 0) {
+        suggestionBox.innerHTML = `<div style="padding:15px; text-align:center; color:#999; font-style:italic;">Không tìm thấy kết quả cho "${keyword}"</div>`;
+        suggestionBox.classList.add('show');
+        return;
+    }
+
+    let htmlContent = '';
+
+    // 1. Render Phần Gợi ý (Tags)
+    if (suggestionTags.length > 0) {
+        htmlContent += `
+            <div class="sugg-header">
+                <i class="fa-solid fa-lightbulb"></i> Gợi ý từ khóa
+            </div>
+            <div class="sugg-tags-list">
+        `;
+        suggestionTags.forEach(tag => {
+            htmlContent += `<a href="${tag.url}" class="sugg-tag-item">${highlightText(tag.text, keyword)}</a>`;
         });
-        html += `</div>`;
+        htmlContent += `</div>`;
     }
-    if (matchedBooks.length > 0) {
-        html += `<div class="suggestion-group"><div class="suggestion-group-title">Sách</div>`;
-        matchedBooks.forEach(book => {
-            const imgUrl = book.AnhBia && book.AnhBia !== "null" ? (book.AnhBia.startsWith("http") ? book.AnhBia : `../img/${book.AnhBia}`) : "https://via.placeholder.com/200x300";
-            const authorObj = globalSearchData.authors.find(a => a.TacGiaID == book.TacGiaID);
-            const authorName = authorObj ? authorObj.TenTacGia : "Đang cập nhật";
-            html += `<a href="chitietsanpham.html?id=${book.SachID}" class="suggestion-item"><img src="${imgUrl}" class="sugg-img"><div class="sugg-info"><h4>${highlightText(book.TenSach, keyword)}</h4><span>${authorName}</span></div></a>`;
+
+    // 2. Render Phần Sản phẩm (Danh sách có ảnh)
+    if (foundBooks.length > 0) {
+        htmlContent += `
+            <div class="sugg-header">
+                <i class="fa-solid fa-book"></i> Sản phẩm phù hợp
+            </div>
+            <div class="sugg-product-list">
+        `;
+        
+        foundBooks.forEach(book => {
+            // Xử lý đường dẫn ảnh và giá
+            const imgUrl = book.AnhBia && book.AnhBia.startsWith("http") ? book.AnhBia : `../img/${book.AnhBia}`;
+            const giaBan = book.GiaBan || (book.Gia * (1 - (book.PhanTramGiam/100)));
+            
+            htmlContent += `
+                <a href="chitietsanpham.html?id=${book.SachID}" class="sugg-product-item">
+                    <img src="${imgUrl}" class="sugg-thumb" onerror="this.src='https://via.placeholder.com/50x70'">
+                    <div class="sugg-info">
+                        <div class="sugg-name">${highlightText(book.TenSach, keyword)}</div>
+                        <div class="sugg-price">${formatMoney(giaBan)}</div>
+                    </div>
+                </a>
+            `;
         });
-        html += `</div>`;
+        htmlContent += `</div>`;
     }
-    if (matchedCats.length === 0 && matchedBooks.length === 0) {
-        html = `<div style="padding:15px; text-align:center; color:#999; font-size:13px;">Không tìm thấy kết quả phù hợp</div>`;
-    }
-    suggestionBox.innerHTML = html;
+
+    // Gán vào DOM và hiển thị
+    suggestionBox.innerHTML = htmlContent;
     suggestionBox.classList.add('show');
 }
 
 async function handleSearch() {
     const keyword = document.getElementById('searchInput').value.trim();
-    if (!keyword) { alert("Vui lòng nhập từ khóa!"); return; }
-    document.getElementById('searchSuggestions').classList.remove('show');
-
-    // Nếu không ở trang chủ, chuyển về trang chủ (hoặc xử lý hiển thị ở trang hiện tại nếu có container)
-    const resultContainer = document.getElementById("searchResultContainer");
+    if (!keyword) return;
     
-    // Nếu trang hiện tại KHÔNG có container kết quả (ví dụ trang chi tiết), chuyển về index
-    if (!resultContainer) {
-         // Thực tế nên lưu keyword vào storage rồi chuyển trang, ở đây báo tạm
-         alert("Đang chuyển về trang chủ để tìm kiếm...");
-         window.location.href = "index.html";
-         return;
+    // Ẩn gợi ý
+    const suggestionBox = document.getElementById('searchSuggestions');
+    if(suggestionBox) suggestionBox.classList.remove('show');
+    
+    // Nếu không phải trang chủ thì chuyển về trang chủ
+    if(!document.getElementById("searchResultContainer")) { 
+        // Trong thực tế, có thể lưu keyword vào URL param rồi redirect
+        // Ở đây redirect về index đơn giản
+        window.location.href = "index.html"; 
+        return; 
     }
 
     const homeSections = document.getElementById("homeSections");
     const resultSection = document.getElementById("searchResultSection");
     
+    // Hiển thị khu vực kết quả
     if(homeSections) homeSections.style.display = "none";
     if(resultSection) resultSection.style.display = "block";
-    resultContainer.innerHTML = '<div style="grid-column:span 5; text-align:center; padding:50px;"><i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><p>Đang tìm kiếm...</p></div>';
 
     const searchKey = removeVietnameseTones(keyword.toLowerCase());
-    const matchedCatIds = globalSearchData.categories.filter(c => removeVietnameseTones(c.TenTheLoai.toLowerCase()).includes(searchKey)).map(c => c.TheLoaiID);
-    const matchedAuthorIds = globalSearchData.authors.filter(a => removeVietnameseTones(a.TenTacGia.toLowerCase()).includes(searchKey)).map(a => a.TacGiaID);
 
+    // --- LOGIC LỌC NÂNG CAO ---
     const foundBooks = globalSearchData.books.filter(book => {
+        // 1. Check Tên sách
         const nameMatch = removeVietnameseTones(book.TenSach.toLowerCase()).includes(searchKey);
-        const catMatch = matchedCatIds.includes(book.TheLoaiID);
-        const authorMatch = matchedAuthorIds.includes(book.TacGiaID);
-        return nameMatch || catMatch || authorMatch;
+        
+        // 2. Check Tên Tác giả (Tra từ ID)
+        const authorObj = globalSearchData.authors.find(a => a.TacGiaID == book.TacGiaID);
+        const authorMatch = authorObj ? removeVietnameseTones(authorObj.TenTacGia.toLowerCase()).includes(searchKey) : false;
+
+        // 3. Check Tên Thể loại (Tra từ ID)
+        const catObj = globalSearchData.categories.find(c => c.TheLoaiID == book.TheLoaiID);
+        const catMatch = catObj ? removeVietnameseTones(catObj.TenTheLoai.toLowerCase()).includes(searchKey) : false;
+
+        // 4. Check Tên Nhà xuất bản (Tra từ ID)
+        const pubObj = globalSearchData.publishers.find(p => p.NhaXuatBanID == book.NhaXuatBanID);
+        const pubMatch = pubObj ? removeVietnameseTones(pubObj.TenNhaXuatBan.toLowerCase()).includes(searchKey) : false;
+
+        // Trả về TRUE nếu khớp bất kỳ điều kiện nào
+        return nameMatch || authorMatch || catMatch || pubMatch;
     });
-
+    
+    // Render kết quả
     document.querySelector('.section-title').innerText = `KẾT QUẢ TÌM KIẾM: "${keyword}" (${foundBooks.length} sách)`;
-    if (foundBooks.length > 0) renderBooksToHTML(foundBooks, "searchResultContainer");
-    else resultContainer.innerHTML = `<div style="grid-column:span 5; text-align:center; padding: 60px;"><p>Không tìm thấy sản phẩm nào.</p><button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; cursor:pointer;">Quay lại</button></div>`;
+    
+    if (foundBooks.length > 0) {
+        renderBooksToHTML(foundBooks, "searchResultContainer");
+    } else {
+        document.getElementById("searchResultContainer").innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                <p>Không tìm thấy sách nào phù hợp với từ khóa <strong>"${keyword}"</strong>.</p>
+                <button onclick="location.reload()" style="padding: 8px 20px; margin-top: 10px; cursor: pointer;">Xem tất cả sách</button>
+            </div>
+        `;
+    }
 }
 
-// Load sách Home Page (Chỉ gọi ở index.html)
+
+// ================================================================
+// 7. CÁC HÀM TẢI DỮ LIỆU TRANG CHỦ & TRANG CON
+// ================================================================
+
 async function loadHotSales() {
-    try {
-        const res = await fetch(AppConfig.getUrl("sach/ban-chay"));
-        const data = await res.json();
-        // Lấy 5 cuốn cho trang chủ
-        if (data.status && data.data) renderBooksToHTML(data.data.slice(0, 5), "bestSalesContainer");
-    } catch (err) { console.error(err); }
-}
-async function loadNewBooks() {
-    try {
-        const res = await fetch(AppConfig.getUrl("sach/moi"));
-        const data = await res.json();
-        // Lấy 5 cuốn cho trang chủ
-        if (data.status && data.data) renderBooksToHTML(data.data.slice(0, 5), "newBooksContainer");
-    } catch (err) { console.error(err); }
+    const res = await fetch(AppConfig.getUrl("sach/ban-chay"));
+    const data = await res.json();
+    if (data.status) renderBooksToHTML(data.data.slice(0, 5), "bestSalesContainer");
 }
 
-// Render sách ra HTML (Dùng chung)
+async function loadNewBooks() {
+    const res = await fetch(AppConfig.getUrl("sach/moi"));
+    const data = await res.json();
+    if (data.status) renderBooksToHTML(data.data.slice(0, 5), "newBooksContainer");
+}
+
+async function loadPageSachMoi() {
+    const res = await fetch(AppConfig.getUrl("sach/moi"));
+    const data = await res.json();
+    if (data.status) renderBooksToHTML(data.data.slice(0, 20), "fullNewBooksContainer");
+}
+
+async function loadPageBanChay() {
+    const res = await fetch(AppConfig.getUrl("sach/ban-chay"));
+    const data = await res.json();
+    if (data.status) renderBooksToHTML(data.data.slice(0, 20), "fullHotBooksContainer");
+}
+
+// --- HÀM RENDER SÁCH (CẬP NHẬT: THÊM THỂ LOẠI VÀ NXB) ---
 function renderBooksToHTML(list, containerId) {
     const box = document.getElementById(containerId);
-    if (!box) return;
-    if (!list || list.length === 0) return;
-
+    if (!box || !list.length) return;
+    
     let html = "";
     list.forEach(book => {
-        const imgUrl = book.AnhBia && book.AnhBia !== "null" ? (book.AnhBia.startsWith("http") ? book.AnhBia : `../img/${book.AnhBia}`) : "https://via.placeholder.com/200x300";
-        let tacGia = book.TenTacGia || "Chưa cập nhật";
-        if (!book.TenTacGia && globalSearchData.authors.length > 0) {
-             const a = globalSearchData.authors.find(au => au.TacGiaID == book.TacGiaID);
-             if(a) tacGia = a.TenTacGia;
+        const imgUrl = book.AnhBia && book.AnhBia.startsWith("http") ? book.AnhBia : `../img/${book.AnhBia}`;
+        const gia = book.GiaBan || (book.Gia * (1 - (book.PhanTramGiam/100)));
+        const stock = parseInt(book.SoLuong || 0);
+        
+        // --- LOGIC MỚI: TỰ ĐỘNG LẤY TÊN THỂ LOẠI VÀ NXB NẾU THIẾU ---
+        
+        // 1. Xử lý Thể loại
+        let catName = book.TenTheLoai;
+        if ((!catName || catName === "") && globalSearchData.categories.length > 0) {
+            const catObj = globalSearchData.categories.find(c => c.TheLoaiID == book.TheLoaiID);
+            if (catObj) catName = catObj.TenTheLoai;
         }
-        let theLoai = book.TenTheLoai || "Khác";
-        if (!book.TenTheLoai && globalSearchData.categories.length > 0) {
-            const c = globalSearchData.categories.find(cat => cat.TheLoaiID == book.TheLoaiID);
-            if(c) theLoai = c.TenTheLoai;
+        if (!catName) catName = "Đang cập nhật";
+
+        // 2. Xử lý Nhà xuất bản
+        let pubName = book.TenNhaXuatBan;
+        if ((!pubName || pubName === "") && globalSearchData.publishers.length > 0) {
+            const pubObj = globalSearchData.publishers.find(p => p.NhaXuatBanID == book.NhaXuatBanID);
+            if (pubObj) pubName = pubObj.TenNhaXuatBan;
         }
+        if (!pubName) pubName = "Đang cập nhật";
 
-        const soLuongTon = parseInt(book.SoLuong || 0);
-        const trangThai = parseInt(book.TrangThai); 
-        let btnCartHtml = '';
-        if (soLuongTon <= 0 || trangThai === 2) btnCartHtml = `<button class="btn-add-cart-mini" disabled style="background:#ccc; cursor:not-allowed;" title="Hết hàng"><i class="fa-solid fa-ban"></i></button>`;
-        else if (trangThai === 0) btnCartHtml = `<button class="btn-add-cart-mini" disabled style="background:#ccc; cursor:not-allowed;" title="Ngừng kinh doanh"><i class="fa-solid fa-lock"></i></button>`;
-        else btnCartHtml = `<button class="btn-add-cart-mini" onclick="addToCartCheck(${book.SachID}, ${soLuongTon})" title="Thêm vào giỏ"><i class="fa-solid fa-cart-shopping"></i></button>`;
+        // 3. Nút mua hàng
+        let btn = (stock > 0 && book.TrangThai == 1) 
+            ? `<button class="btn-add-cart-mini" onclick="addToCartCheck(${book.SachID}, ${stock})"><i class="fa-solid fa-cart-shopping"></i></button>`
+            : `<button class="btn-add-cart-mini" disabled style="background:#ccc"><i class="fa-solid fa-ban"></i></button>`;
 
+        // 4. Render HTML Card
         html += `
-        <div class="product-card" style="height: auto; min-height: 420px;">
+        <div class="product-card" style="height: auto; min-height: 480px; display: flex; flex-direction: column;">
             ${book.PhanTramGiam > 0 ? `<span class="badge-sale">-${book.PhanTramGiam}%</span>` : ""}
-            <a href="chitietsanpham.html?id=${book.SachID}" class="card-img-wrap">
+            <a href="chitietsanpham.html?id=${book.SachID}" class="card-img-wrap" style="flex-shrink:0;">
                 <img src="${imgUrl}" class="p-img" onerror="this.src='https://via.placeholder.com/200x300'">
             </a>
-            <a href="chitietsanpham.html?id=${book.SachID}">
-                <h3 class="p-name" title="${book.TenSach}" style="margin-bottom: 5px;">${book.TenSach}</h3>
-            </a>
-            <div class="p-meta" style="font-size: 0.85rem; color: #666; line-height: 1.6; margin-bottom: 10px;">
-                 <div class="p-meta-item" title="Tác giả"><i class="fa-solid fa-pen-nib" style="width:15px; text-align:center;"></i> <strong>${tacGia}</strong></div>
-                 <div class="p-meta-item" title="Thể loại"><i class="fa-solid fa-book" style="width:15px; text-align:center;"></i> <span>${theLoai}</span></div>
-            </div>
-            <div class="card-bottom" style="margin-top: auto;">
-                <div class="price-wrap">
-                    <span class="current-price">${formatMoney(book.GiaBan || book.Gia * (1 - (book.PhanTramGiam/100)))}</span>
-                    ${book.PhanTramGiam > 0 ? `<span class="old-price">${formatMoney(book.Gia)}</span>` : ""}
+            
+            <div style="flex-grow:1; padding:0 10px; display:flex; flex-direction:column;">
+                <a href="chitietsanpham.html?id=${book.SachID}"><h3 class="p-name" style="height:40px; overflow:hidden;">${book.TenSach}</h3></a>
+                
+                <div class="p-meta" style="color:#555; font-size:0.8rem; flex-grow:1;">
+                    <div class="p-meta-item" style="margin-bottom:4px;">
+                        <i class="fa-solid fa-pen-nib" style="color:#FF6600"></i> ${book.TenTacGia || "..."}
+                    </div>
+                    <div class="p-meta-item" style="margin-bottom:4px;">
+                        <i class="fa-solid fa-bookmark" style="color:#FF6600"></i> ${catName}
+                    </div>
+                    <div class="p-meta-item">
+                        <i class="fa-solid fa-building" style="color:#FF6600"></i> ${pubName}
+                    </div>
                 </div>
-                ${btnCartHtml}
+            </div>
+
+            <div class="card-bottom" style="margin-top:auto; padding:10px; border-top:1px solid #eee;">
+                <div class="price-wrap">
+                    <span class="current-price">${formatMoney(gia)}</span>
+                    ${book.PhanTramGiam > 0 ? `<span class="old-price" style="font-size:0.8rem">${formatMoney(book.Gia)}</span>` : ""}
+                </div>
+                ${btn}
             </div>
         </div>`;
     });
     box.innerHTML = html;
 }
 
-// Tiện ích
-function highlightText(text, keyword) { if(!text) return ""; const regex = new RegExp(`(${keyword})`, 'gi'); return text.replace(regex, '<span class="highlight-text">$1</span>'); }
-function removeVietnameseTones(str) { str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a"); str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e"); str = str.replace(/ì|í|ị|ỉ|ĩ/g,"i"); str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o"); str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u"); str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g,"y"); str = str.replace(/đ/g,"d"); str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A"); str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E"); str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I"); str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O"); str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U"); str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y"); str = str.replace(/Đ/g, "D"); str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, ""); str = str.replace(/\u02C6|\u0306|\u031B/g, ""); str = str.replace(/ + /g," "); str = str.trim(); return str; }
-function formatMoney(num) { return Number(num).toLocaleString("vi-VN") + "đ"; }
-function addToCartCheck(sachId, stock) { if (stock <= 0) { alert("Sản phẩm này đã hết hàng!"); return; } addToCartAndRedirect(sachId); }
-async function addToCartAndRedirect(sachId) {
+
+// ================================================================
+// 8. TIỆN ÍCH (UTILS)
+// ================================================================
+
+function highlightText(text, key) { 
+    if(!text) return ""; 
+    return text.replace(new RegExp(`(${key})`, 'gi'), '<span class="highlight-text">$1</span>'); 
+}
+
+function removeVietnameseTones(str) { 
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); 
+}
+
+function formatMoney(n) { 
+    return Number(n).toLocaleString("vi-VN") + "đ"; 
+}
+
+function addToCartCheck(id, stock) { 
+    if(stock<=0) return alert("Hết hàng"); 
+    addToCartAndRedirect(id); 
+}
+
+async function addToCartAndRedirect(id) { 
     const userJson = localStorage.getItem("user");
-    if (!userJson) { if(confirm("Bạn cần đăng nhập để thêm sản phẩm vào giỏ. Đi đến trang đăng nhập?")) window.location.href = "dangnhap.html"; return; }
+    if(!userJson) { 
+        if(confirm("Cần đăng nhập?")) window.location.href="dangnhap.html"; 
+        return; 
+    }
     const user = JSON.parse(userJson);
     try {
-        const res = await fetch(AppConfig.getUrl("gio-hang/them"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ UserID: user.UserID, SachID: sachId, SoLuong: 1 }) });
+        const res = await fetch(AppConfig.getUrl("gio-hang/them"), { 
+            method:"POST", 
+            headers:{"Content-Type":"application/json"}, 
+            body:JSON.stringify({UserID:user.UserID, SachID:id, SoLuong:1}) 
+        });
         const data = await res.json();
-        if (data.status) { alert("Đã thêm sản phẩm vào giỏ hàng thành công!"); if (typeof updateCartBadge === 'function') updateCartBadge(); } else alert(data.message || "Lỗi: Không thể thêm vào giỏ hàng.");
-    } catch (err) { console.error(err); alert("Lỗi kết nối đến server!"); }
-}
-
-/* ==================================================================
-   PHẦN BỔ SUNG: LOAD TRANG RIÊNG (20 SÁCH)
-   ================================================================== */
-
-// Hàm dùng cho trang sachmoi.html (Load 20 sách)
-async function loadPageSachMoi() {
-    if (globalSearchData.authors.length === 0) await preloadSearchData();
-
-    try {
-        const res = await fetch(AppConfig.getUrl("sach/moi"));
-        const data = await res.json();
-        
-        if (data.status && data.data) {
-            const list20 = data.data.slice(0, 20); // Lấy 20 cuốn
-            renderBooksToHTML(list20, "fullNewBooksContainer");
+        if(data.status) { 
+            alert("Thêm thành công"); 
+            if(typeof updateCartBadge === 'function') updateCartBadge(); 
         } else {
-            const container = document.getElementById("fullNewBooksContainer");
-            if(container) container.innerHTML = '<p>Không có dữ liệu.</p>';
+            alert(data.message || "Lỗi");
         }
-    } catch (err) {
-        console.error(err);
-        const container = document.getElementById("fullNewBooksContainer");
-        if(container) container.innerHTML = '<p style="color:red">Lỗi tải dữ liệu.</p>';
-    }
-}
-
-// Hàm dùng cho trang banchay.html (Load 20 sách)
-async function loadPageBanChay() {
-    if (globalSearchData.authors.length === 0) await preloadSearchData();
-
-    try {
-        const res = await fetch(AppConfig.getUrl("sach/ban-chay"));
-        const data = await res.json();
-        
-        if (data.status && data.data) {
-            const list20 = data.data.slice(0, 20); // Lấy 20 cuốn
-            renderBooksToHTML(list20, "fullHotBooksContainer");
-        } else {
-            const container = document.getElementById("fullHotBooksContainer");
-            if(container) container.innerHTML = '<p>Không có dữ liệu.</p>';
-        }
-    } catch (err) {
-        console.error(err);
-        const container = document.getElementById("fullHotBooksContainer");
-        if(container) container.innerHTML = '<p style="color:red">Lỗi tải dữ liệu.</p>';
-    }
+    } catch(e) { console.error(e); }
 }

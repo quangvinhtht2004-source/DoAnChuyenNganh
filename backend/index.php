@@ -1,49 +1,59 @@
 <?php
 // backend/index.php
 
-// Cấu hình CORS (Cho phép Frontend gọi API)
-header("Access-Control-Allow-Origin: *");
+// -----------------------------------------------------------------------------
+// 1. CẤU HÌNH CORS CHUẨN (QUAN TRỌNG)
+// -----------------------------------------------------------------------------
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    header("Access-Control-Allow-Credentials: true"); // Cho phép gửi Cookie
+    header("Access-Control-Max-Age: 86400");
+}
+
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 
-// Xử lý preflight request (OPTIONS)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+        header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");         
+    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+        header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+    exit(0);
 }
 
-// 1. Nạp Core & Config
+// -----------------------------------------------------------------------------
+// 2. KHỞI ĐỘNG SESSION (ĐÃ SỬA LỖI MẤT SESSION)
+// -----------------------------------------------------------------------------
+if (session_status() === PHP_SESSION_NONE) {
+    
+    session_start();
+}
+
+// -----------------------------------------------------------------------------
+// 3. NẠP FILE HỆ THỐNG
+// -----------------------------------------------------------------------------
 require_once "./config/Database.php";
 require_once "./core/Model.php";
 require_once "./core/Controller.php";
 require_once "./core/Router.php";
 require_once "./helper/response.php";
+require_once "./helper/SendMail.php";
 
-// 2. Nạp Controllers (CẬP NHẬT MỚI)
-// --- Nhóm User & Auth (Mới) ---
+// Nạp Controllers
 require_once "./controllers/AuthController.php";
 require_once "./controllers/UserController.php";
-
-// --- Nhóm Sản Phẩm & Danh Mục ---
 require_once "./controllers/SachController.php";
 require_once "./controllers/TheLoaiController.php";
 require_once "./controllers/TacGiaController.php";
 require_once "./controllers/NhaXuatBanController.php";
-
-// --- Nhóm Đơn Hàng & Giỏ Hàng ---
 require_once "./controllers/GioHangController.php";
 require_once "./controllers/DonHangController.php";
 require_once "./controllers/KhuyenMaiController.php";
-
-// --- Nhóm Tương Tác ---
 require_once "./controllers/ReviewController.php";
 
-// (Đã xóa AdminController, KhachHangController, NhanVienController cũ)
-
-// 3. Khởi tạo Router & Nạp Routes
+// Khởi tạo Router
 $router = new Router();
 require_once "./routes/api.php";
 
-// 4. Chạy ứng dụng
 $router->dispatch();
 ?>

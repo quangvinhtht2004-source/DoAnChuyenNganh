@@ -1,23 +1,22 @@
+// js/admin-users.js
+
 document.addEventListener("DOMContentLoaded", () => {
     loadUsers();
 });
 
 let allUsersData = []; 
+const modal = document.getElementById("userModal");
 
-// =======================================================
-// 1. CHUẨN HÓA VAI TRÒ
-// =======================================================
-function getStandardRole(dbRole) {
+// 1. Phân loại đơn giản: Admin, Staff, Member
+function getUserGroup(dbRole) {
     if (!dbRole) return 'KhachHang';
     const r = String(dbRole).toLowerCase().trim();
     if (r === 'admin' || r === 'quantri' || r === '1') return 'Admin';
-    if (r === 'nhanvien' || r === 'staff' || r === '2') return 'NhanVien';
+    if (r.includes('nhanvien') || r === 'staff' || r === '2') return 'NhanVien';
     return 'KhachHang';
 }
 
-// =======================================================
-// 2. TẢI DỮ LIỆU & PHÂN CHIA
-// =======================================================
+// 2. Tải dữ liệu
 async function loadUsers() {
     try {
         const res = await fetch(AppConfig.getUrl("user"));
@@ -25,118 +24,100 @@ async function loadUsers() {
 
         if (data.status && Array.isArray(data.data)) {
             allUsersData = data.data;
-            
-            // Lọc ra 3 nhóm
-            const admins = allUsersData.filter(u => getStandardRole(u.VaiTro) === 'Admin');
-            const staffs = allUsersData.filter(u => getStandardRole(u.VaiTro) === 'NhanVien');
-            const members = allUsersData.filter(u => getStandardRole(u.VaiTro) === 'KhachHang');
+            const admins = allUsersData.filter(u => getUserGroup(u.VaiTro) === 'Admin');
+            const staffs = allUsersData.filter(u => getUserGroup(u.VaiTro) === 'NhanVien');
+            const members = allUsersData.filter(u => getUserGroup(u.VaiTro) === 'KhachHang');
 
-            // Render từng nhóm với quyền hạn khác nhau
             renderAdminTable(admins);
             renderStaffTable(staffs);
             renderMemberTable(members);
         }
-    } catch (err) {
-        console.error("Lỗi tải user:", err);
-    }
+    } catch (err) { console.error(err); }
 }
 
-// --- Render Bảng Admin (Chỉ xem, không thao tác) ---
+// Render Admin
 function renderAdminTable(list) {
     const tbody = document.getElementById("listAdmin");
-    tbody.innerHTML = list.map(u => `
+    if(!tbody) return;
+    tbody.innerHTML = list.length ? list.map(u => `
         <tr>
             <td style="font-weight:bold;">${u.HoTen || u.Username}</td>
             <td>${u.Email}</td>
-            <td>${u.SoDienThoai || '0123456789'}</td>
-            <td style="text-align:center;"><span class="role-badge badge-admin">Admin</span></td>
-        </tr>
-    `).join('');
+            <td>${u.SoDienThoai || '---'}</td>
+            <td style="text-align:center;"><span class="role-badge badge-admin">Chủ Cửa Hàng</span></td>
+        </tr>`).join('') : `<tr><td colspan="4" style="text-align:center">Chưa có Admin</td></tr>`;
 }
 
-// --- Render Bảng Nhân Viên (Sửa, Xóa) ---
+// Render Staff (Nhân viên Vận hành)
 function renderStaffTable(list) {
     const tbody = document.getElementById("listStaff");
-    if(list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Chưa có nhân viên</td></tr>`;
-        return;
-    }
-    tbody.innerHTML = list.map(u => {
+    if(!tbody) return;
+    tbody.innerHTML = list.length ? list.map(u => {
         const uStr = JSON.stringify(u).replace(/"/g, '&quot;');
         return `
         <tr>
             <td style="font-weight:bold;">${u.HoTen || u.Username}</td>
             <td>${u.Email}</td>
             <td>${u.SoDienThoai || '-'}</td>
-            <td style="text-align:center;"><span class="role-badge badge-staff">Staff</span></td>
+            <td style="text-align:center;">
+                <span class="badge-ops">NV Vận Hành</span>
+            </td>
             <td class="action-col">
-                <button class="btn-icon btn-edit" title="Sửa" onclick="openEditModal(${uStr})">
-                    <i class="fa-solid fa-pen"></i>
-                </button>
-                <button class="btn-icon btn-delete" title="Xóa" onclick="deleteUser(${u.UserID})">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                <button class="btn-icon btn-edit" onclick="openEditModal(${uStr})"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-icon btn-delete" onclick="deleteUser(${u.UserID})"><i class="fa-solid fa-trash"></i></button>
             </td>
         </tr>`;
-    }).join('');
+    }).join('') : `<tr><td colspan="5" style="text-align:center;">Chưa có nhân viên</td></tr>`;
 }
 
-// --- Render Bảng Khách Hàng (Chỉ Xóa) ---
+// Render Member
 function renderMemberTable(list) {
     const tbody = document.getElementById("listMember");
-    if(list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Chưa có khách hàng</td></tr>`;
-        return;
-    }
-    tbody.innerHTML = list.map(u => `
+    if(!tbody) return;
+    tbody.innerHTML = list.length ? list.map(u => `
         <tr>
             <td style="font-weight:bold;">${u.HoTen || u.Username}</td>
             <td>${u.Email}</td>
             <td>${u.SoDienThoai || '-'}</td>
-            <td>${u.DiaChi || 'Chưa cập nhật'}</td>
             <td class="action-col">
-                <button class="btn-icon btn-delete" title="Xóa" onclick="deleteUser(${u.UserID})">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                <button class="btn-icon btn-delete" onclick="deleteUser(${u.UserID})"><i class="fa-solid fa-trash"></i></button>
             </td>
-        </tr>
-    `).join('');
+        </tr>`).join('') : `<tr><td colspan="4" style="text-align:center;">Chưa có khách hàng</td></tr>`;
 }
 
-// =======================================================
-// 3. CÁC HÀM THAO TÁC (Thêm, Sửa, Xóa)
-// =======================================================
-const modal = document.getElementById("userModal");
-
-// Mở modal Thêm mới (Chỉ thêm Nhân viên)
+// --- LOGIC MODAL ---
 window.openAddModal = function() {
-    document.getElementById("modalTitle").innerText = "Thêm Nhân Viên";
-    document.getElementById("userId").value = ""; // Rỗng = Thêm mới
+    document.getElementById("modalTitle").innerText = "Thêm Nhân Viên Vận Hành";
+    document.getElementById("userId").value = ""; 
     document.getElementById("userForm").reset();
-    document.getElementById("passGroup").style.display = "block"; // Hiện ô pass
+    
+    // Mặc định luôn là NhanVien
+    document.getElementById("userRole").value = "NhanVien"; 
+    
+    document.getElementById("passGroup").style.display = "block";
+    document.getElementById("passNote").style.display = "none";
     modal.classList.add("show");
 }
 
-// Mở modal Sửa (Chỉ sửa Nhân viên)
 window.openEditModal = function(user) {
-    document.getElementById("modalTitle").innerText = "Cập nhật Nhân Viên";
+    document.getElementById("modalTitle").innerText = "Cập nhật: " + (user.HoTen || "Nhân viên");
     document.getElementById("userId").value = user.UserID;
     document.getElementById("userName").value = user.HoTen || "";
     document.getElementById("userEmail").value = user.Email || "";
     document.getElementById("userPhone").value = user.SoDienThoai || "";
     
-    // Ẩn ô mật khẩu khi sửa (nếu không muốn đổi pass)
-    document.getElementById("passGroup").style.display = "none";
+    // Giữ nguyên role cũ hoặc set lại là NhanVien
+    document.getElementById("userRole").value = "NhanVien";
+
+    document.getElementById("passGroup").style.display = "block"; 
     document.getElementById("userPass").value = ""; 
-    
+    document.getElementById("passNote").style.display = "block";
     modal.classList.add("show");
 }
 
-window.closeModal = function() {
-    modal.classList.remove("show");
-}
+window.closeModal = function() { modal.classList.remove("show"); }
 
-// Xử lý Lưu (Create hoặc Update)
+// --- LƯU DỮ LIỆU ---
 window.saveUser = async function() {
     const id = document.getElementById("userId").value;
     const isEdit = id !== "";
@@ -145,91 +126,31 @@ window.saveUser = async function() {
         HoTen: document.getElementById("userName").value.trim(),
         Email: document.getElementById("userEmail").value.trim(),
         SoDienThoai: document.getElementById("userPhone").value.trim(),
-        VaiTro: 'NhanVien' // Mặc định form này chỉ xử lý nhân viên
+        VaiTro: document.getElementById("userRole").value // Luôn là 'NhanVien'
     };
 
-    // Validate
-    if (!payload.HoTen || !payload.Email) {
-        alert("Vui lòng nhập tên và email!");
-        return;
-    }
+    if (!payload.HoTen || !payload.Email) { alert("⚠️ Thiếu thông tin!"); return; }
 
-    let url = "";
+    let url = isEdit ? AppConfig.getUrl("user/update") : AppConfig.getUrl("user/create");
+    if(isEdit) payload.UserID = id;
     
-    if (isEdit) {
-        // --- SỬA NHÂN VIÊN ---
-        url = AppConfig.getUrl("user/update"); // Cần đảm bảo API có endpoint này hoặc dùng chung
-        // Backend có thể yêu cầu UserID trong body
-        payload.UserID = id;
-        
-        // Nếu API update của bạn là chung, hãy chắc chắn UserController hỗ trợ update
-        // Nếu không có API update riêng, bạn có thể cần bổ sung vào UserController.php
-    } else {
-        // --- THÊM NHÂN VIÊN ---
-        url = AppConfig.getUrl("user/create");
-        const pass = document.getElementById("userPass").value.trim();
-        if (!pass) { alert("Vui lòng nhập mật khẩu!"); return; }
-        payload.MatKhau = pass;
-    }
+    const pass = document.getElementById("userPass").value.trim();
+    if(!isEdit && !pass) { alert("⚠️ Nhập mật khẩu!"); return; }
+    if(pass) payload.MatKhau = pass;
 
-    // Gửi API (Giả sử bạn dùng user/create cho thêm và user/update cho sửa)
-    // Lưu ý: Nếu bạn chưa có API update user, bạn cần viết thêm trong PHP.
-    // Ở đây tôi dùng tạm logic gọi API create cho thêm.
-    
     try {
-        // Logic gửi API
-        // Nếu là Sửa mà chưa có API update, code sẽ lỗi. Bạn cần bổ sung backend.
-        // Tạm thời demo cho phần Thêm:
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
+        const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
         const result = await res.json();
-        
-        if(result.status) {
-            alert(isEdit ? "Cập nhật thành công!" : "Thêm nhân viên thành công!");
-            closeModal();
-            loadUsers();
-        } else {
-            alert("Lỗi: " + result.message);
-        }
-    } catch(e) {
-        console.error(e);
-        // Fallback alert nếu API chưa có
-        if(isEdit) alert("Chức năng cập nhật cần API backend hỗ trợ!");
-        else alert("Lỗi kết nối!");
-    }
+        if(result.status) { alert("✅ Thành công!"); closeModal(); loadUsers(); }
+        else { alert("❌ " + result.message); }
+    } catch(e) { alert("Lỗi kết nối!"); }
 }
 
-// Xóa User (Dùng chung cho Nhân viên và Khách hàng)
 window.deleteUser = async function(id) {
-    if(!confirm("Bạn có chắc chắn muốn xóa tài khoản này? Hành động không thể hoàn tác.")) return;
-
+    if(!confirm("Xóa tài khoản này?")) return;
     try {
-        // Gọi API xóa user (Giả sử API là user/delete hoặc giống logic xóa sách)
-        // Bạn cần check file api.php xem đường dẫn xóa user là gì.
-        // Nếu chưa có, tôi giả định là 'user/delete'
-        const url = AppConfig.getUrl("user/delete"); 
-        
-        // Nếu api.php chưa có route này, bạn phải thêm vào: 
-        // $router->post('user/delete', 'UserController@delete');
-
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ UserID: id })
-        });
+        const res = await fetch(AppConfig.getUrl("user/delete"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ UserID: id }) });
         const result = await res.json();
-        
-        if(result.status) {
-            alert("Đã xóa thành công!");
-            loadUsers();
-        } else {
-            alert("Không thể xóa: " + result.message);
-        }
-    } catch(e) {
-        console.error(e);
-        alert("Lỗi khi gọi API xóa (Kiểm tra xem Backend đã có hàm delete chưa)");
-    }
+        if(result.status) { alert("✅ Đã xóa!"); loadUsers(); } else { alert("❌ " + result.message); }
+    } catch(e) { alert("Lỗi kết nối!"); }
 }

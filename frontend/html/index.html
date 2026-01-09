@@ -47,12 +47,12 @@
                 <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
 
                 <div class="search-box-custom">
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." autocomplete="off">
-                    <button class="search-btn-custom" onclick="handleSearch()">
-                        Tìm kiếm
-                    </button>
-                    <div id="searchSuggestions" class="search-suggestions"></div>
-                </div>
+    <input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." autocomplete="off">
+    <button class="search-btn-custom" onclick="handleSearch()">
+        Tìm kiếm
+    </button>
+    <div id="searchSuggestions" class="search-suggestions"></div>
+</div>
 
                 <div class="hotline-box">
                     <div class="icon-phone">
@@ -93,9 +93,6 @@
                         <li class="menu-item" onmouseover="openFilterTab(event, 'tab-publisher')">
                             <span>Nhà xuất bản</span> <i class="fa-solid fa-chevron-right"></i>
                         </li>
-                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-price')">
-                            <span>Mức giá</span> <i class="fa-solid fa-chevron-right"></i>
-                        </li>
                         <li class="menu-item" onclick="quickFilter('all', 'all')">
                             <span><strong>Tất cả sản phẩm</strong></span>
                         </li>
@@ -122,24 +119,6 @@
                                 <p class="loading-text">Đang tải nhà xuất bản...</p>
                             </div>
                         </div>
-
-                        <div id="tab-price" class="menu-tab-content">
-                            <h4 class="mega-tab-title">Lọc theo mức giá</h4>
-                            <div class="mega-vertical-list">
-                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '0-50000')">
-                                    <strong>Dưới 50.000đ</strong>
-                                </a>
-                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '50000-100000')">
-                                    <strong>50.000đ - 100.000đ</strong>
-                                </a>
-                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '100000-200000')">
-                                    <strong>100.000đ - 200.000đ</strong>
-                                </a>
-                                <a href="javascript:void(0)" class="mega-link-item box-style" onclick="quickFilter('price', '200000-max')">
-                                    <strong>Trên 200.000đ</strong>
-                                </a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -157,7 +136,42 @@
     </nav>
 
     <main class="container">
-        <div class="main-layout">
+        <div class="main-layout" style="display: grid; grid-template-columns: 260px 1fr; gap: 30px; margin-top: 24px; align-items: start;">
+            
+            <div class="sidebar-wrapper">
+                
+                <div class="filter-box">
+                    <h3 class="filter-title"><i class="fa-solid fa-list"></i> Thể Loại</h3>
+                    <ul class="filter-list" id="sidebarCategory">
+                        <p class="loading-text">Đang tải...</p>
+                    </ul>
+                </div>
+
+                <div class="filter-box">
+                    <h3 class="filter-title"><i class="fa-solid fa-money-bill-wave"></i> Mức Giá</h3>
+                    <ul class="filter-list">
+                        <li><a href="javascript:void(0)" onclick="quickFilter('price', '0-50000')">Dưới 50.000đ</a></li>
+                        <li><a href="javascript:void(0)" onclick="quickFilter('price', '50000-100000')">50.000đ - 100.000đ</a></li>
+                        <li><a href="javascript:void(0)" onclick="quickFilter('price', '100000-200000')">100.000đ - 200.000đ</a></li>
+                        <li><a href="javascript:void(0)" onclick="quickFilter('price', '200000-max')">Trên 200.000đ</a></li>
+                    </ul>
+                </div>
+
+                <div class="filter-box">
+                    <h3 class="filter-title"><i class="fa-solid fa-pen-nib"></i> Tác Giả</h3>
+                    <ul class="filter-list" id="sidebarAuthor">
+                        <p class="loading-text">Đang tải...</p>
+                    </ul>
+                </div>
+
+                <div class="filter-box">
+                    <h3 class="filter-title"><i class="fa-solid fa-building"></i> Nhà Xuất Bản</h3>
+                    <ul class="filter-list" id="sidebarPublisher">
+                        <p class="loading-text">Đang tải...</p>
+                    </ul>
+                </div>
+
+            </div>
             <div class="content-area">
 
                 <section class="hero-modern">
@@ -182,9 +196,7 @@
                 <div id="homeSections">
                     <section class="book-section no-bg">
                         <div class="section-header-simple">
-                            <h2 class="section-title-simple">
-                                Sách mới về
-                            </h2>
+                            <h2 class="section-title-simple">Sách mới về</h2>
                         </div>
                         <div class="product-grid" id="newBooksContainer"></div>
 
@@ -197,9 +209,7 @@
 
                     <section class="book-section no-bg">
                         <div class="section-header-simple">
-                            <h2 class="section-title-simple">
-                                Bestselling Books
-                            </h2>
+                            <h2 class="section-title-simple">Xu hướng mua sắm</h2>
                         </div>
                         <div class="product-grid" id="bestSalesContainer"></div>
 
@@ -209,7 +219,7 @@
                     </section>
                 </div>
             </div>
-        </div>
+            </div>
     </main>
 
     <footer class="footer">
@@ -270,5 +280,4 @@
     <script src="../js/main.js"></script>
 
 </body>
-
 </html>

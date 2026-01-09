@@ -25,10 +25,10 @@
             <li><a href="khuyenmai.html" class="active"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
 
             <p class="menu-title">Kho sách</p>
-           <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
             <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
-    <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
-    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+            <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
             
             <p class="menu-title">Hệ thống</p>
             <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
@@ -42,7 +42,7 @@
 
     <main class="main-content">
         <div class="page-header-button">
-            <h2>Mã Giảm Giá</h2>
+            <h2>Danh sách Mã giảm giá</h2>
             <button class="btn-add" onclick="openModal()"><i class="fa-solid fa-plus"></i> Tạo mã mới</button>
         </div>
 
@@ -50,14 +50,14 @@
             <table>
                 <thead>
                     <tr>
-                        <th style="width:50px">ID</th>
+                        <th style="width: 50px;">ID</th>
                         <th>Mã Code</th>
-                        <th>Loại giảm</th>
+                        <th>Loại</th>
                         <th>Giá trị</th>
-                        <th>Điều kiện (SL & Min)</th>
-                        <th>Hạn sử dụng</th>
-                        <th style="text-align:center;">Trạng thái</th>
-                        <th style="text-align:center;">Thao tác</th>
+                        <th>Điều kiện / SL</th>
+                        <th>Hạn dùng</th>
+                        <th style="text-align: center;">Trạng thái</th>
+                        <th style="text-align: center;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -68,16 +68,14 @@
 </div>
 
 <div id="editModal" class="modal">
-    <div class="modal-box"> <div class="modal-header">
-            <h3 id="modalTitle">Thông tin mã giảm giá</h3>
-            <button class="btn-icon" onclick="closeModal()" style="background:none; color:#666; font-size:20px;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm mã mới</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
         <form id="dataForm">
             <input type="hidden" name="KhuyenMaiID">
-
+            
             <div class="modal-body">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div class="form-group">
@@ -104,7 +102,7 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="form-group">
                         <label>Số lượng mã</label>
                         <input type="number" name="SoLuong" value="100" placeholder="VD: 100">
@@ -113,6 +111,13 @@
                         <label>Ngày hết hạn</label>
                         <input type="date" name="NgayKetThuc">
                         <small style="color:#666; font-size:11px;">Bỏ trống = Vĩnh viễn</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select name="TrangThai" style="font-weight: 500;">
+                            <option value="1">Đang hoạt động</option>
+                            <option value="0">Tạm khóa / Ẩn</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -127,8 +132,6 @@
 
 <script src="../js/config.js"></script>
 <script src="../js/auth-middleware.js"></script>
-<script src="../js/admin-manager.js"></script> 
 <script src="../js/admin-khuyenmai.js"></script> 
-
 </body>
 </html>

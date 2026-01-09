@@ -32,7 +32,7 @@ class GioHangController {
         // Tuy nhiên, logic chặn chính nằm ở add/update bên dưới.
         $items = $this->itemModel->getItems($cart['GioHangID']);
         
-        jsonResponse(true, "Giỏ hàng", $items);
+        jsonResponse(true, "Lấy dữ liệu thành công", $items);
     }
 
     // =================================================================

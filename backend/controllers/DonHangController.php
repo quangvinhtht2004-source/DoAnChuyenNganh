@@ -95,16 +95,19 @@ class DonHangController {
 
             if ($km) {
                 $now = time();
-                $ngayBatDau = strtotime($km['NgayBatDau']);
                 $ngayKetThuc = $km['NgayKetThuc'] ? strtotime($km['NgayKetThuc']) : null;
 
                 if ($km['TrangThai'] == 1 && 
                     $km['SoLuong'] > 0 &&
-                    $now >= $ngayBatDau && 
                     ($ngayKetThuc === null || $now <= $ngayKetThuc) &&
                     $tamTinh >= $km["DonToiThieu"]
                 ) {
-                    $giam = $km["LoaiKM"] === "phantram" ? $tamTinh * ($km["GiaTri"] / 100) : $km["GiaTri"];
+                    if ($km["LoaiKM"] === "phantram") {
+                        $giam = round($tamTinh * ($km["GiaTri"] / 100));
+                    } else {
+                        $giam = $km["GiaTri"];
+                    }
+
                     if ($giam > $tamTinh) $giam = $tamTinh;
                     $kmId = $km["KhuyenMaiID"];
                 }
@@ -126,6 +129,7 @@ class DonHangController {
         try {
             $this->db->beginTransaction();
 
+            // Insert Đơn hàng
             $stmt = $this->db->prepare("
                 INSERT INTO DonHang (UserID, DiaChiGiao, SoDienThoai, GhiChu, PhuongThucTT, TongTien, TienGiamVoucher, KhuyenMaiID, TrangThai, NgayTao)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ChoXacNhan', NOW())
@@ -134,8 +138,10 @@ class DonHangController {
             $stmt->execute([$userId, $diaChi, $sdt, $ghiChuLuuDB, $phuongThuc, $tongTien, $giam, $kmId]);
             $donHangID = $this->db->lastInsertId();
 
+            // Insert Chi tiết & Trừ kho
             foreach ($items as $item) {
                 $this->chiTietModel->add($donHangID, $item["SachID"], $item["SoLuong"], $item["GiaBan"]);
+                // Trừ tồn kho
                 $this->sachModel->updateStock($item["SachID"], $item["SoLuong"]);
             }
 
@@ -144,6 +150,7 @@ class DonHangController {
             }
 
             $this->gioHangModel->clearCart($cart["GioHangID"]);
+            
             $this->db->commit();
             jsonResponse(true, "Đặt hàng thành công!", ["DonHangID" => $donHangID]);
 
@@ -154,33 +161,95 @@ class DonHangController {
     }
 
     // ============================================================
-    // [QUAN TRỌNG] HÀM BẠN ĐANG THIẾU -> COPY ĐOẠN NÀY VÀO
+    // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (ĐÃ BỔ SUNG HOÀN KHO & HOÀN MÃ)
     // ============================================================
     public function updateStatus() {
-        // Nhận dữ liệu JSON
         $data = json_decode(file_get_contents("php://input"), true);
 
-        // Lấy tham số
         $id = $data['DonHangID'] ?? null;
-        $status = $data['TrangThai'] ?? null;
+        $newStatus = $data['TrangThai'] ?? null;
 
-        // Kiểm tra
-        if (!$id || !$status) {
-            jsonResponse(false, "Thiếu ID hoặc Trạng thái đơn hàng");
+        if (!$id || !$newStatus) {
+            jsonResponse(false, "Thiếu thông tin cần thiết");
             return;
         }
 
         try {
-            // Cập nhật Database
+            // 1. Lấy trạng thái hiện tại VÀ KhuyenMaiID (Quan trọng)
+            $stmtCheck = $this->db->prepare("SELECT TrangThai, KhuyenMaiID FROM DonHang WHERE DonHangID = ?");
+            $stmtCheck->execute([$id]);
+            $currentOrder = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            if (!$currentOrder) {
+                jsonResponse(false, "Đơn hàng không tồn tại");
+                return;
+            }
+            
+            $oldStatus = $currentOrder['TrangThai'];
+
+            // 2. Ràng buộc logic
+            if ($oldStatus === 'HoanThanh') {
+                jsonResponse(false, "Đơn hàng đã hoàn thành, không thể thay đổi.");
+                return;
+            }
+            if ($oldStatus === 'DaHuy') {
+                jsonResponse(false, "Đơn hàng này đã bị hủy trước đó.");
+                return;
+            }
+
+            // --- LOGIC HỦY ĐƠN ---
+            if ($newStatus === 'DaHuy') {
+                // Chỉ cho phép hủy khi đang chờ xác nhận
+                if ($oldStatus !== 'ChoXacNhan') {
+                    jsonResponse(false, "Đơn hàng đang xử lý hoặc đang giao, không thể hủy lúc này!");
+                    return;
+                }
+
+                // A. CỘNG LẠI SỐ LƯỢNG SÁCH VÀO KHO
+                $stmtItems = $this->db->prepare("SELECT SachID, SoLuong FROM ChiTietDonHang WHERE DonHangID = ?");
+                $stmtItems->execute([$id]);
+                $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+                if ($items) {
+                    foreach ($items as $item) {
+                        $stmtRestock = $this->db->prepare("UPDATE Sach SET SoLuong = SoLuong + ? WHERE SachID = ?");
+                        $stmtRestock->execute([$item['SoLuong'], $item['SachID']]);
+                    }
+                }
+
+                // B. [MỚI] HOÀN TRẢ SỐ LƯỢNG MÃ KHUYẾN MÃI (NẾU CÓ)
+                if (!empty($currentOrder['KhuyenMaiID'])) {
+                    $this->kmModel->restoreQuantity($currentOrder['KhuyenMaiID']);
+                }
+            }
+
+            // 3. Cập nhật trạng thái
             $stmt = $this->db->prepare("UPDATE DonHang SET TrangThai = ? WHERE DonHangID = ?");
             
-            if ($stmt->execute([$status, $id])) {
+            if ($stmt->execute([$newStatus, $id])) {
                 jsonResponse(true, "Cập nhật trạng thái thành công!");
             } else {
-                jsonResponse(false, "Không thể cập nhật trạng thái (Lỗi SQL)");
+                jsonResponse(false, "Lỗi hệ thống: Không thể cập nhật");
             }
         } catch (Exception $e) {
             jsonResponse(false, "Lỗi Server: " . $e->getMessage());
+        }
+    }
+
+    // --- API: Lấy lịch sử đơn hàng của 1 User ---
+    public function history() {
+        $userId = $_GET['userId'] ?? null;
+
+        if (!$userId) {
+            jsonResponse(false, "Thiếu UserID");
+            return;
+        }
+
+        try {
+            $orders = $this->donHangModel->getByUser($userId);
+            jsonResponse(true, "Lịch sử đơn hàng", $orders);
+        } catch (Exception $e) {
+            jsonResponse(false, "Lỗi: " . $e->getMessage());
         }
     }
 }

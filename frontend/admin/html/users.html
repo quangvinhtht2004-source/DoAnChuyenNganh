@@ -4,44 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý Người dùng | VKD Admin</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    
+    <style>
+        /* Style cho input có icon */
+        .input-with-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            color: #9CA3AF;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .input-with-icon input {
+            padding-left: 38px !important;
+        }
+        .input-with-icon input:focus + i {
+            color: var(--primary-color);
+        }
+        /* Badge nhân viên vận hành */
+        .badge-ops {
+            background-color: #E0F2FE;
+            color: #0369A1;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
-<div class="admin-container">
 
-     <aside class="sidebar">
+<div class="admin-container">
+    <aside class="sidebar">
         <div class="sidebar-header">
             <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
         </div>
-        
         <ul class="sidebar-menu">
             <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
-            
             <p class="menu-title">Bán hàng</p>
             <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
             <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
-
             <p class="menu-title">Kho sách</p>
-          <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
             <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
-    <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
-    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
-            
+            <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+            <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
             <p class="menu-title">Hệ thống</p>
-           <li><a href="users.html" class="active"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="users.html" class="active"><i class="fa-solid fa-users"></i> Người dùng</a></li>
             <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
-
             <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
                 <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
             </li>
         </ul>
     </aside>
-    <main class="main-content">
-        <h2 style="font-size: 24px; font-weight: 700; color: #333;">Quản lý người dùng</h2>
 
-        <div class="user-group-title"><i class="fa-solid fa-user-shield"></i> QUẢN TRỊ VIÊN (ADMIN)</div>
+    <main class="main-content">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--primary-color);">Quản lý nhân sự</h2>
+
+        <div class="user-group-title"><i class="fa-solid fa-user-shield"></i> CHỦ CỬA HÀNG (ADMIN)</div>
         <div class="table-box">
             <table>
                 <thead>
@@ -50,17 +78,17 @@
                         <th>Email</th>
                         <th>SĐT</th>
                         <th style="text-align: center;">Vai Trò</th>
-                        </tr>
+                    </tr>
                 </thead>
                 <tbody id="listAdmin"></tbody>
             </table>
         </div>
 
-        <div class="user-group-header">
-            <div class="user-group-title"><i class="fa-solid fa-user-tie"></i> NHÂN VIÊN (STAFF)</div>
-            <button class="btn-add" onclick="openAddModal()">+ Thêm nhân viên</button>
+        <div class="user-group-header" style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="user-group-title" style="margin: 0;"><i class="fa-solid fa-briefcase"></i> NHÂN VIÊN VẬN HÀNH</div>
+            <button class="btn-add" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Thêm nhân viên</button>
         </div>
-        <div class="table-box">
+        <div class="table-box" style="margin-top: 10px;">
             <table>
                 <thead>
                     <tr>
@@ -75,7 +103,7 @@
             </table>
         </div>
 
-        <div class="user-group-title"><i class="fa-solid fa-users"></i> KHÁCH HÀNG (MEMBER)</div>
+        <div class="user-group-title" style="margin-top: 30px;"><i class="fa-solid fa-users"></i> KHÁCH HÀNG (MEMBER)</div>
         <div class="table-box">
             <table>
                 <thead>
@@ -83,7 +111,6 @@
                         <th>Họ Tên</th>
                         <th>Email</th>
                         <th>SĐT</th>
-                        <th>Địa Chỉ</th>
                         <th style="text-align: center;">Thao tác</th>
                     </tr>
                 </thead>
@@ -94,34 +121,71 @@
 </div>
 
 <div id="userModal" class="modal">
-    <div class="modal-box"> 
-        <h3 id="modalTitle" style="margin-bottom: 20px;">Thêm Nhân Sự</h3>
+    <div class="modal-box" style="max-width: 700px;"> 
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm Nhân Viên Vận Hành</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
         <form id="userForm">
-            <input type="hidden" id="userId"> <div class="form-group" style="margin-bottom: 15px;">
-                <label>Họ và tên <span style="color:red">*</span></label>
-                <input type="text" id="userName" class="form-control" placeholder="Ví dụ: Nguyễn Văn A">
-            </div>
-
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Email <span style="color:red">*</span></label>
-                <input type="email" id="userEmail" class="form-control" placeholder="staff@example.com">
-            </div>
-
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label>Số điện thoại</label>
-                <input type="text" id="userPhone" class="form-control" placeholder="09...">
-            </div>
-
-            <div class="form-group" id="passGroup" style="margin-bottom: 15px;">
-                <label>Mật khẩu <span style="color:red">*</span></label>
-                <input type="password" id="userPass" class="form-control" placeholder="Nhập mật khẩu...">
-            </div>
-
+            <input type="hidden" id="userId"> 
             <input type="hidden" id="userRole" value="NhanVien">
+            
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p style="font-size: 12px; font-weight: 700; color: var(--primary-color); margin-bottom: 10px; text-transform: uppercase;">
+                            <i class="fa-solid fa-id-card"></i> Thông tin
+                        </p>
+                        <div class="form-group">
+                            <label>Họ và tên <span style="color:red">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-user"></i>
+                                <input type="text" id="userName" placeholder="Ví dụ: Nguyễn Văn A">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="text" id="userPhone" placeholder="0909...">
+                            </div>
+                        </div>
+                        <div class="form-group" style="background: #F3F4F6; padding: 10px; border-radius: 8px;">
+                            <label style="margin-bottom: 0;">Chức vụ:</label>
+                            <span style="font-weight: 700; color: var(--primary-color);">Nhân viên Vận hành</span>
+                            <div style="font-size: 11px; color: #666; margin-top: 4px;">* Quản lý Sách, Đơn hàng & Voucher.</div>
+                        </div>
+                    </div>
 
-            <div class="modal-actions" style="text-align: right;">
-                <button type="button" class="btn-cancel" onclick="closeModal()">Đóng</button>
-                <button type="button" class="btn-save" onclick="saveUser()">Lưu lại</button>
+                    <div>
+                        <p style="font-size: 12px; font-weight: 700; color: var(--primary-color); margin-bottom: 10px; text-transform: uppercase;">
+                            <i class="fa-solid fa-lock"></i> Tài khoản
+                        </p>
+                        <div class="form-group">
+                            <label>Email đăng nhập <span style="color:red">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" id="userEmail" placeholder="staff@example.com">
+                            </div>
+                        </div>
+                        <div class="form-group" id="passGroup">
+                            <label>Mật khẩu <span style="color:red">*</span></label>
+                            <div class="input-with-icon">
+                                <i class="fa-solid fa-key"></i>
+                                <input type="password" id="userPass" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div id="passNote" style="display:none; background: #FFF4E5; padding: 10px; border-radius: 6px; font-size: 12px; color: #663C00; border: 1px solid #FFCC80; margin-top: 10px;">
+                            <i class="fa-solid fa-circle-info"></i> Để trống nếu không muốn đổi mật khẩu.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
+                <button type="button" class="btn-save" onclick="saveUser()"><i class="fa-solid fa-floppy-disk"></i> Lưu thông tin</button>
             </div>
         </form>
     </div>

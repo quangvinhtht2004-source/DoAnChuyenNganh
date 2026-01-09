@@ -4,7 +4,7 @@ require_once __DIR__ . "/../core/Model.php";
 class Sach extends Model
 {
     /** ================================
-     * XỬ LÝ PRICE
+     * XỬ LÝ GIÁ (Hàm hỗ trợ)
      * ================================ */
     private function processPrice($book)
     {
@@ -33,7 +33,7 @@ class Sach extends Model
     }
 
     /** ================================
-     * BASE QUERY JOIN
+     * BASE QUERY 
      * ================================ */
     private $baseSelect = "
         SELECT 
@@ -48,11 +48,33 @@ class Sach extends Model
     ";
 
     /** ================================
-     * 1. LẤY CHI TIẾT SÁCH
+     * [MỚI] KIỂM TRA TÊN SÁCH ĐÃ TỒN TẠI CHƯA
+     * ================================ */
+    public function checkExist($tenSach)
+    {
+        // Kiểm tra chính xác tên sách
+        $sql = "SELECT SachID, TenSach FROM Sach WHERE TenSach = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([trim($tenSach)]); 
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /** ================================
+     * 1. LẤY TẤT CẢ CHO ADMIN (Sắp xếp theo ID)
+     * ================================ */
+    public function getAllAdmin() {
+        $sql = $this->baseSelect . " ORDER BY s.SachID ASC";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /** ================================
+     * 2. LẤY CHI TIẾT SÁCH
      * ================================ */
     public function getById($id)
     {
-        $sql = $this->baseSelect . " WHERE s.SachID = ? AND s.TrangThai = 1";
+        $sql = $this->baseSelect . " WHERE s.SachID = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$id]);
 
@@ -60,24 +82,30 @@ class Sach extends Model
     }
 
     /** ================================
-     * 2. TÌM KIẾM SÁCH (SẮP XẾP THEO ID TĂNG DẦN)
+     * 3. TÌM KIẾM SÁCH
      * ================================ */
     public function search($keyword)
     {
+        // Thêm điều kiện OR cho TenTheLoai và TenNhaXuatBan
         $sql = $this->baseSelect . "
                 WHERE s.TrangThai = 1
-                AND (s.TenSach LIKE ? OR tg.TenTacGia LIKE ?)
+                AND (
+                    s.TenSach LIKE ? 
+                    OR tg.TenTacGia LIKE ? 
+                    OR tl.TenTheLoai LIKE ? 
+                    OR nxb.TenNhaXuatBan LIKE ?
+                )
                 ORDER BY s.SachID ASC";
 
         $kw = "%$keyword%";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$kw, $kw]);
+        // Truyền tham số 4 lần cho 4 dấu hỏi chấm (?)
+        $stmt->execute([$kw, $kw, $kw, $kw]);
 
         return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
-
     /** ================================
-     * 3. SÁCH MỚI VỀ
+     * 4. SÁCH MỚI VỀ
      * ================================ */
     public function getNewArrivals()
     {
@@ -93,7 +121,7 @@ class Sach extends Model
     }
 
     /** ================================
-     * 4. SÁCH BÁN CHẠY
+     * 5. SÁCH BÁN CHẠY
      * ================================ */
     public function getBestSellers()
     {
@@ -108,37 +136,34 @@ class Sach extends Model
         return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-   public function getByTheLoai($listIds)
-{
-    // 1. Xử lý bảo mật: Chỉ giữ lại các con số, loại bỏ ký tự lạ để tránh SQL Injection
-    // Ví dụ input: "1, 3, a, '" -> Output mảng: [1, 3]
-    $arrIds = explode(',', $listIds);
-    $cleanIds = [];
-    foreach($arrIds as $id) {
-        if(intval($id) > 0) {
-            $cleanIds[] = intval($id);
+    /** ================================
+     * 6. LẤY THEO THỂ LOẠI
+     * ================================ */
+    public function getByTheLoai($listIds)
+    {
+        $arrIds = explode(',', $listIds);
+        $cleanIds = [];
+        foreach($arrIds as $id) {
+            if(intval($id) > 0) $cleanIds[] = intval($id);
         }
+
+        if(empty($cleanIds)) return [];
+
+        $idString = implode(',', $cleanIds);
+
+        $sql = $this->baseSelect . " 
+                WHERE s.TrangThai = 1 
+                AND s.TheLoaiID IN ($idString) 
+                ORDER BY s.SachID ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+        return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
 
-    if(empty($cleanIds)) return [];
-
-    // 2. Chuyển lại thành chuỗi để đưa vào SQL
-    $idString = implode(',', $cleanIds);
-
-    // 3. Sắp xếp theo ID tăng dần (#1 -> #102)
-    $sql = $this->baseSelect . " 
-            WHERE s.TrangThai = 1 
-            AND s.TheLoaiID IN ($idString) 
-            ORDER BY s.SachID ASC";
-
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute();
-
-    return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
-}
-
     /** ================================
-     * 5. CẬP NHẬT RATING
+     * 7. CẬP NHẬT RATING & TỒN KHO
      * ================================ */
     public function updateRating($SachID, $SoSao)
     {
@@ -146,18 +171,10 @@ class Sach extends Model
                 SET RatingTB = ((RatingTB * SoDanhGia) + :SoSao) / (SoDanhGia + 1),
                     SoDanhGia = SoDanhGia + 1
                 WHERE SachID = :SachID";
-
         $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute([
-            ":SoSao" => $SoSao,
-            ":SachID" => $SachID
-        ]);
+        return $stmt->execute([":SoSao" => $SoSao, ":SachID" => $SachID]);
     }
 
-    /** ================================
-     * 6. KIỂM TRA TỒN KHO
-     * ================================ */
     public function checkStock($SachID)
     {
         $stmt = $this->db->prepare("SELECT SoLuong FROM Sach WHERE SachID = ?");
@@ -165,21 +182,11 @@ class Sach extends Model
         return intval($stmt->fetchColumn());
     }
 
-    /** ================================
-     * 7. CẬP NHẬT TỒN KHO (TRỪ HÀNG)
-     * ================================ */
     public function updateStock($SachID, $SoLuongMua)
     {
-        $sql = "UPDATE Sach 
-                SET SoLuong = SoLuong - :sl 
-                WHERE SachID = :id AND SoLuong >= :sl";
-
+        $sql = "UPDATE Sach SET SoLuong = SoLuong - :sl WHERE SachID = :id AND SoLuong >= :sl";
         $stmt = $this->db->prepare($sql);
-
-        return $stmt->execute([
-            ":sl" => $SoLuongMua,
-            ":id" => $SachID
-        ]);
+        return $stmt->execute([":sl" => $SoLuongMua, ":id" => $SachID]);
     }
 }
 ?>

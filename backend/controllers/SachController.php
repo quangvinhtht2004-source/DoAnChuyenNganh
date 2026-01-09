@@ -13,103 +13,29 @@ class SachController {
         $this->model = new Sach($this->db);
     }
 
-    // =================================================================
-    // [ĐÃ SỬA] HÀM LIST MỚI - LẤY TOÀN BỘ SÁCH (KHÔNG BỊ LỌC ẨN)
-    // =================================================================
+    // --- API: Lấy danh sách (Admin) ---
     public function list() {
         try {
-            // Cố gắng lấy từ VIEW để có đủ tên Tác giả, Thể loại...
-            // Lệnh này KHÔNG có 'WHERE TrangThai = 1' nên sẽ hiện cả sách Ngừng bán
-            $sql = "SELECT * FROM View_Sach_ChiTiet ORDER BY SachID ASC"; 
-            
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute();
-            $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            jsonResponse(true, "Danh sách sách (Full)", $list);
-
+            $list = $this->model->getAllAdmin();
+            jsonResponse(true, "Danh sách sách", $list);
         } catch (Exception $e) {
-            // Fallback: Nếu View chưa được tạo trong Database, lấy từ bảng gốc Sach
-            try {
-                $sql = "SELECT * FROM Sach ORDER BY SachID ASC";
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute();
-                $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                jsonResponse(true, "Danh sách sách (Gốc)", $list);
-            } catch (Exception $ex) {
-                jsonResponse(false, "Lỗi Server: " . $ex->getMessage());
-            }
+            jsonResponse(false, "Lỗi Server: " . $e->getMessage());
         }
     }
 
-    // =================================================================
-    // CÁC HÀM KHÁC GIỮ NGUYÊN NHƯ CŨ
-    // =================================================================
-
+    // --- API: Chi tiết sách ---
     public function detail() {
         $id = $_GET["id"] ?? 0;
-        
-        // 1. Lấy thông tin cơ bản của sách
         $sach = $this->model->getById($id);
 
         if ($sach) {
-            // 2. Lấy danh sách ảnh phụ
-            try {
-                $sql = "SELECT TenFileAnh FROM hinhanhsach WHERE SachID = ?";
-                $stmt = $this->db->prepare($sql);
-                $stmt->execute([$id]);
-                $listAnh = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $sach['DanhSachAnh'] = $listAnh;
-            } catch (Exception $e) {
-                $sach['DanhSachAnh'] = [];
-            }
             jsonResponse(true, "Chi tiết sách", $sach);
         } else {
             jsonResponse(false, "Không tìm thấy sách");
         }
     }
 
-    public function search() {
-        $keyword = $_GET["keyword"] ?? "";
-        $result = $this->model->search($keyword);
-        jsonResponse(true, "Kết quả", $result);
-    }
-
-    public function newArrivals() {
-        jsonResponse(true, "Sách mới", $this->model->getNewArrivals());
-    }
-
-    public function bestSellers() {
-        jsonResponse(true, "Bán chạy", $this->model->getBestSellers());
-    }
-
-    public function getByTheLoai() {
-        $ids = $_GET["ids"] ?? ""; 
-
-        if (empty($ids)) {
-            jsonResponse(true, "Chưa chọn danh mục", []);
-            return;
-        }
-
-        $data = $this->model->getByTheLoai($ids);
-
-        if ($data) {
-            jsonResponse(true, "Danh sách sách theo thể loại", $data);
-        } else {
-            jsonResponse(true, "Không tìm thấy sách nào", []);
-        }
-    }
-
-    // --- HÀM HELPER ---
-    private function parseID($value) {
-        if (empty($value) || $value == 0) {
-            return null;
-        }
-        return intval($value);
-    }
-
-    // --- CÁC HÀM GHI (CREATE/UPDATE/DELETE) ---
-
+    // --- API: Thêm sách mới ---
     public function create() {
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -118,22 +44,33 @@ class SachController {
             return;
         }
 
+        $tenSach = trim($data['TenSach']);
+
+        // [CHECK TRÙNG TÊN]
+        $existing = $this->model->checkExist($tenSach);
+        if ($existing) {
+            jsonResponse(false, "Tên sách '$tenSach' đã tồn tại trong hệ thống. Vui lòng đặt tên khác!");
+            return;
+        }
+
         try {
             $stmt = $this->db->prepare("
                 INSERT INTO Sach (TenSach, TacGiaID, TheLoaiID, NhaXuatBanID, 
-                                  Gia, PhanTramGiam, SoLuong, AnhBia, MoTa, TrangThai)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                  Gia, PhanTramGiam, SoLuong, AnhBia, AnhPhu1, AnhPhu2, MoTa, TrangThai)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $result = $stmt->execute([
-                $data['TenSach'],
-                $this->parseID($data['TacGiaID'] ?? null),
-                $this->parseID($data['TheLoaiID'] ?? null),
-                $this->parseID($data['NhaXuatBanID'] ?? null),
+                $tenSach,
+                !empty($data['TacGiaID']) ? intval($data['TacGiaID']) : null,
+                !empty($data['TheLoaiID']) ? intval($data['TheLoaiID']) : null,
+                !empty($data['NhaXuatBanID']) ? intval($data['NhaXuatBanID']) : null,
                 floatval($data['Gia']),
                 intval($data['PhanTramGiam'] ?? 0),
                 intval($data['SoLuong'] ?? 0),
                 $data['AnhBia'] ?? '',
+                $data['AnhPhu1'] ?? '', 
+                $data['AnhPhu2'] ?? '', 
                 $data['MoTa'] ?? '',
                 intval($data['TrangThai'] ?? 1)
             ]);
@@ -141,8 +78,7 @@ class SachController {
             if ($result) {
                 jsonResponse(true, "Thêm sách thành công");
             } else {
-                $error = $stmt->errorInfo();
-                jsonResponse(false, "Lỗi SQL: " . $error[2]);
+                jsonResponse(false, "Lỗi SQL: Không thể thêm sách");
             }
 
         } catch (Exception $e) {
@@ -150,49 +86,55 @@ class SachController {
         }
     }
 
+    // --- API: Cập nhật sách ---
     public function update() {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['SachID']) || empty($data['TenSach'])) {
-            jsonResponse(false, "Thiếu ID hoặc Tên sách");
+        if (empty($data['SachID'])) {
+            jsonResponse(false, "Thiếu ID sách");
+            return;
+        }
+
+        $id = intval($data['SachID']);
+        $tenSach = trim($data['TenSach']);
+
+        // [CHECK TRÙNG TÊN] - Ngoại trừ chính nó
+        $existing = $this->model->checkExist($tenSach);
+        if ($existing && $existing['SachID'] != $id) {
+            jsonResponse(false, "Tên sách '$tenSach' đã được sử dụng bởi ID #" . $existing['SachID']);
             return;
         }
 
         try {
             $stmt = $this->db->prepare("
                 UPDATE Sach SET
-                    TenSach = ?,
-                    TacGiaID = ?,
-                    TheLoaiID = ?,
-                    NhaXuatBanID = ?,
-                    Gia = ?,
-                    PhanTramGiam = ?,
-                    SoLuong = ?,
-                    AnhBia = ?,
-                    MoTa = ?,
-                    TrangThai = ?
+                    TenSach = ?, TacGiaID = ?, TheLoaiID = ?, NhaXuatBanID = ?,
+                    Gia = ?, PhanTramGiam = ?, SoLuong = ?,
+                    AnhBia = ?, AnhPhu1 = ?, AnhPhu2 = ?, 
+                    MoTa = ?, TrangThai = ?
                 WHERE SachID = ?
             ");
 
             $result = $stmt->execute([
-                $data['TenSach'],
-                $this->parseID($data['TacGiaID'] ?? null),
-                $this->parseID($data['TheLoaiID'] ?? null),
-                $this->parseID($data['NhaXuatBanID'] ?? null),
+                $tenSach,
+                !empty($data['TacGiaID']) ? intval($data['TacGiaID']) : null,
+                !empty($data['TheLoaiID']) ? intval($data['TheLoaiID']) : null,
+                !empty($data['NhaXuatBanID']) ? intval($data['NhaXuatBanID']) : null,
                 floatval($data['Gia']),
                 intval($data['PhanTramGiam'] ?? 0),
                 intval($data['SoLuong'] ?? 0),
                 $data['AnhBia'] ?? '',
+                $data['AnhPhu1'] ?? '', 
+                $data['AnhPhu2'] ?? '', 
                 $data['MoTa'] ?? '',
                 intval($data['TrangThai'] ?? 1),
-                intval($data['SachID'])
+                $id
             ]);
 
             if ($result) {
                 jsonResponse(true, "Cập nhật thành công");
             } else {
-                $error = $stmt->errorInfo();
-                jsonResponse(false, "Lỗi SQL Update: " . $error[2]);
+                jsonResponse(false, "Lỗi cập nhật SQL");
             }
 
         } catch (Exception $e) {
@@ -200,6 +142,7 @@ class SachController {
         }
     }
 
+    // --- API: Xóa sách ---
     public function delete() {
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -219,12 +162,35 @@ class SachController {
             }
 
         } catch (Exception $e) {
+            // Xử lý lỗi khóa ngoại (nếu sách đã có trong đơn hàng)
             if (strpos($e->getMessage(), '1451') !== false || strpos($e->getMessage(), 'Constraint') !== false) {
                  jsonResponse(false, "Không thể xóa: Sách này đang có trong đơn hàng!");
             } else {
                  jsonResponse(false, "Lỗi: " . $e->getMessage());
             }
         }
+    }
+
+    // --- API: Public (Search, Filter...) ---
+   public function search() {
+        $keyword = $_GET["keyword"] ?? "";
+        $result = $this->model->search($keyword); 
+        jsonResponse(true, "Kết quả", $result);
+    }
+
+    public function newArrivals() {
+        jsonResponse(true, "Sách mới", $this->model->getNewArrivals());
+    }
+
+    public function bestSellers() {
+        jsonResponse(true, "Bán chạy", $this->model->getBestSellers());
+    }
+
+    public function getByTheLoai() {
+        $ids = $_GET["ids"] ?? ""; 
+        if (empty($ids)) { jsonResponse(true, "Chưa chọn danh mục", []); return; }
+        $data = $this->model->getByTheLoai($ids);
+        jsonResponse(true, "Danh sách", $data ?: []);
     }
 }
 ?>

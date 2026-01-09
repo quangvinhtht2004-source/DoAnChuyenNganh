@@ -3,11 +3,12 @@ require_once __DIR__ . "/../core/Model.php";
 
 class KhuyenMai extends Model
 {
-    /** Lấy tất cả khuyến mãi */
+    /** * Lấy tất cả khuyến mãi 
+     * Sắp xếp: Mã đang hoạt động (1) lên trước, sau đó đến mã mới nhất
+     */
     public function getAll()
     {
-        // Sắp xếp theo ID giảm dần (Mới nhất lên đầu)
-        $stmt = $this->db->prepare("SELECT * FROM KhuyenMai ORDER BY KhuyenMaiID ASC");
+        $stmt = $this->db->prepare("SELECT * FROM KhuyenMai ORDER BY TrangThai ASC, KhuyenMaiID ASC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -28,12 +29,12 @@ class KhuyenMai extends Model
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /** Tạo mới (Đã rút gọn các cột thừa) */
+    /** Tạo mới */
     public function create($data)
     {
         $stmt = $this->db->prepare("
-            INSERT INTO KhuyenMai (Code, LoaiKM, GiaTri, DonToiThieu, SoLuong, NgayKetThuc)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO KhuyenMai (Code, LoaiKM, GiaTri, DonToiThieu, SoLuong, NgayKetThuc, TrangThai)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
 
         return $stmt->execute([
@@ -42,11 +43,12 @@ class KhuyenMai extends Model
             $data["GiaTri"],
             $data["DonToiThieu"] ?? 0,
             $data["SoLuong"] ?? 0,
-            $data["NgayKetThuc"] ?? null // Nếu null thì hiểu là vĩnh viễn
+            $data["NgayKetThuc"] ?? null,
+            isset($data["TrangThai"]) ? intval($data["TrangThai"]) : 1
         ]);
     }
 
-    /** Cập nhật (Đã rút gọn) */
+    /** Cập nhật */
     public function update($data)
     {
         $stmt = $this->db->prepare("
@@ -56,7 +58,8 @@ class KhuyenMai extends Model
                 GiaTri = ?,
                 DonToiThieu = ?,
                 SoLuong = ?,
-                NgayKetThuc = ?
+                NgayKetThuc = ?,
+                TrangThai = ?
             WHERE KhuyenMaiID = ?
         ");
 
@@ -67,6 +70,7 @@ class KhuyenMai extends Model
             $data["DonToiThieu"] ?? 0,
             $data["SoLuong"] ?? 0,
             $data["NgayKetThuc"] ?? null,
+            isset($data["TrangThai"]) ? intval($data["TrangThai"]) : 1,
             $data["KhuyenMaiID"]
         ]);
     }
@@ -85,6 +89,18 @@ class KhuyenMai extends Model
             UPDATE KhuyenMai 
             SET SoLuong = SoLuong - 1 
             WHERE KhuyenMaiID = ? AND SoLuong > 0
+        ");
+        return $stmt->execute([$id]);
+    }
+
+    /** * [MỚI] Hoàn trả số lượng khi hủy đơn 
+     */
+    public function restoreQuantity($id)
+    {
+        $stmt = $this->db->prepare("
+            UPDATE KhuyenMai 
+            SET SoLuong = SoLuong + 1 
+            WHERE KhuyenMaiID = ?
         ");
         return $stmt->execute([$id]);
     }

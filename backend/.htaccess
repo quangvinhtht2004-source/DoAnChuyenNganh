@@ -1,9 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    # Đảm bảo tên thư mục chính xác
     RewriteBase /WebsiteBanSach/backend/
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-
-    RewriteRule ^(.+)$ index.php?url=$1 [QSA,L]
+    
+    # Chuyển về index.php (Router mới sẽ tự xử lý phần còn lại)
+    RewriteRule ^(.+)$ index.php [QSA,L]
 </IfModule>

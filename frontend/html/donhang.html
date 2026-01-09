@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VKDBookStore | Đơn Hàng Của Tôi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        /* CSS riêng cho trang đơn hàng */
+        .order-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 20px;
+            transition: box-shadow 0.2s;
+        }
+
+        .order-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .order-id { font-weight: 700; color: #333; }
+        .order-date { font-size: 0.9rem; color: #777; margin-left: 10px; }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-ChoXacNhan { background: #fff3cd; color: #856404; }
+        .status-DangXuLy { background: #cce5ff; color: #004085; }
+        .status-DangGiao { background: #d4edda; color: #155724; }
+        .status-HoanThanh { background: #d4edda; color: #155724; }
+        .status-DaHuy { background: #f8d7da; color: #721c24; }
+
+        .order-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .order-info p { margin: 5px 0; font-size: 0.95rem; color: #555; }
+        .order-info i { width: 20px; text-align: center; color: #999; margin-right: 5px; }
+        
+        .total-price { color: #FF6600; font-weight: 700; font-size: 1.1rem; }
+
+        .order-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-detail {
+            padding: 8px 15px;
+            background: #fff;
+            border: 1px solid #FF6600;
+            color: #FF6600;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .btn-detail:hover { background: #FF6600; color: #fff; }
+
+        .btn-cancel {
+            padding: 8px 15px;
+            background: #fff;
+            border: 1px solid #dc3545;
+            color: #dc3545;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .btn-cancel:hover { background: #dc3545; color: #fff; }
+
+        /* Modal Chi tiết đơn hàng */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 9999; 
+            left: 0; top: 0;
+            width: 100%; height: 100%; 
+            background-color: rgba(0,0,0,0.5); 
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%; max-width: 700px;
+            max-height: 90vh; 
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+        }
+        
+        .modal-header h3 { margin: 0; color: #333; font-size: 18px; font-weight: 700; }
+        
+        .close-modal {
+            font-size: 24px; cursor: pointer; color: #aaa;
+        }
+        .close-modal:hover { color: #000; }
+
+        .modal-body-scroll {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Thông tin người nhận trong Modal */
+        .customer-info-section {
+            background: #fff;
+            border: 1px dashed #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .customer-info-section h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .info-line {
+            display: flex;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+        .info-line strong { width: 110px; color: #333; }
+
+        /* Danh sách sản phẩm trong Modal */
+        .detail-item {
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        .detail-item:last-child { border-bottom: none; }
+        
+        .detail-img { width: 60px; height: 90px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; }
+        .detail-info { flex: 1; }
+        .detail-name { font-weight: 600; color: #333; margin-bottom: 5px; display: block; font-size: 14px; }
+        .detail-meta { font-size: 13px; color: #666; }
+
+        /* Bảng tổng kết tiền trong Modal */
+        .modal-summary {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fcfcfc;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .sum-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .sum-row.final {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 18px;
+            font-weight: 700;
+            color: #FF6600;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header-new">
+        <div class="top-bar">
+            <div class="container top-bar-inner">
+                <div class="top-left">
+                    <span><i class="fa-solid fa-phone"></i> 0707 189 144</span>
+                    <span><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</span>
+                    <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
+                </div>
+
+                <div class="top-right">
+                    <div id="loginBtn" class="auth-links">
+                        <a href="dangnhap.html">ĐĂNG NHẬP</a>
+                        <span class="sep">|</span>
+                        <a href="dangky.html">ĐĂNG KÝ</a>
+                    </div>
+
+                    <div id="userInfoContainer" class="user-dropdown-top" style="display:none;">
+                        <div class="user-info-top" id="userInfo">
+                            <i class="fa-regular fa-user"></i> <span id="userName">User</span>
+                        </div>
+                        <div class="user-menu">
+                            <a href="profile.html" class="user-menu-item"><i class="fa-solid fa-user"></i> Tài khoản</a>
+                            <a href="donhang.html" class="user-menu-item"><i class="fa-solid fa-box"></i> Đơn hàng</a>
+                            <a href="#" id="logoutBtn" class="user-menu-item logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-main">
+            <div class="container header-main-inner">
+                <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+
+                <div class="search-box-custom">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." autocomplete="off">
+                    <button class="search-btn-custom" onclick="handleSearch()">
+                        Tìm kiếm
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                </div>
+
+                <div class="hotline-box">
+                    <div class="icon-phone">
+                        <i class="fa-solid fa-phone-volume"></i>
+                    </div>
+                    <div class="hotline-text">
+                        <span>Tư vấn bán hàng</span>
+                        <strong>0707 189 144</strong>
+                    </div>
+                </div>
+
+                <a href="giohang.html" class="cart-tab">
+                    <div class="cart-icon-wrap">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="badge" id="cartBadge">0</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container nav-container">
+
+            <div class="header-filter-wrapper">
+                <div class="header-filter-btn">
+                    <i class="fa-solid fa-bars"></i> <span>DANH MỤC SẢN PHẨM</span>
+                </div>
+
+                <div class="mega-menu">
+                    <ul class="mega-menu-sidebar">
+                        <li class="menu-item active" onmouseover="openFilterTab(event, 'tab-category')">
+                            <span>Thể loại</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-author')">
+                            <span>Tác giả</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-publisher')">
+                            <span>Nhà xuất bản</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                    </ul>
+
+                    <div class="mega-menu-content">
+                        <div id="tab-category" class="menu-tab-content active">
+                            <h4 class="mega-tab-title">Khám phá theo Thể loại</h4>
+                            <div id="megaCategoryList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải danh mục...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-author" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Tác giả nổi bật</h4>
+                            <div id="megaAuthorList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải tác giả...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-publisher" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Nhà xuất bản uy tín</h4>
+                            <div id="megaPublisherList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải nhà xuất bản...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-links-list">
+                <a href="index.html">TRANG CHỦ</a>
+                <a href="index.html?catId=10">MANGA - COMIC</a>
+                <a href="index.html?catId=6">TIỂU THUYẾT</a>
+                <a href="index.html?catId=8">GIÁO TRÌNH</a>
+                <a href="index.html?catId=7">KINH DỊ</a>
+                <a href="index.html?catId=9">TRINH THÁM</a>
+                <a href="index.html?catId=3">TÂM LINH</a>
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="breadcrumb" style="margin-top: 20px;">
+            <a href="index.html">Trang chủ</a> 
+            <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i> 
+            <span>Lịch sử đơn hàng</span>
+        </div>
+
+        <div class="profile-container">
+            <aside class="profile-sidebar">
+                <div class="user-brief">
+                    <img src="https://via.placeholder.com/150" alt="Avatar" id="sidebarAvatar">
+                    <h3 id="sidebarName">Khách hàng</h3>
+                    <p style="font-size: 12px; color: #888;">Thành viên</p>
+                </div>
+                <div class="profile-menu">
+                    <a href="profile.html">
+                        <i class="fa-regular fa-user"></i> Hồ sơ cá nhân
+                    </a>
+                    <a href="donhang.html" class="active">
+                        <i class="fa-solid fa-box-open"></i> Đơn hàng của tôi
+                    </a>
+                    <a href="#" id="logoutBtnSidebar">
+                        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                    </a>
+                </div>
+            </aside>
+
+            <section class="profile-content">
+                <h2 class="content-title">Đơn Hàng Của Tôi</h2>
+                
+                <div id="loadingText" style="text-align: center; margin-top: 30px;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...
+                </div>
+
+                <div id="orderListContainer"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="orderDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-invoice"></i> Chi Tiết Đơn Hàng</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalBody" class="modal-body-scroll">
+                </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <a href="#" class="footer-logo">VKD<span>BOOKSTORE</span></a>
+                    <p class="footer-desc">
+                        180 Cao Lỗ, Phường 4, Quận 8, TP.HCM<br>
+                        Công Ty Cổ Phần Phát Hành Sách VKD
+                    </p>
+                    <ul class="contact-info">
+                        <li><i class="fa-solid fa-location-dot"></i> 180 cao lỗ , Q.8, TP.HCM</li>
+                        <li><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</li>
+                        <li><i class="fa-solid fa-phone"></i> 0707 189 144</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">DỊCH VỤ</h4>
+                    <ul class="footer-links">
+                        <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+                        <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+                        <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+                        <li><a href="chinhsachbaomat.html">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">HỖ TRỢ</h4>
+                    <ul class="footer-links">
+                        <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
+                        <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/ctsvSTU" target="_blank" title="Facebook STU"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com/c/ĐạihọcCôngNghệSàiGònSTU" target="_blank" title="Youtube STU"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/dhcnsg/" target="_blank" title="Instagram STU"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@dhcnsg" target="_blank" title="Tiktok STU"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="copyright-text">
+                    © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín. <br>
+                    Giấy chứng nhận Đăng ký Kinh doanh số 0304132047 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/header-auth.js"></script>
+    <script src="../js/cart-badge.js"></script>
+    <script src="../js/main.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const userJson = localStorage.getItem("user");
+            if (!userJson) {
+                alert("Vui lòng đăng nhập để xem đơn hàng!");
+                window.location.href = "dangnhap.html";
+                return;
+            }
+
+            const user = JSON.parse(userJson);
+            loadUserProfileSidebar(user);
+            loadOrderHistory(user.UserID);
+
+            document.getElementById("logoutBtnSidebar").addEventListener("click", (e) => {
+                e.preventDefault();
+                localStorage.removeItem("user");
+                window.location.href = "index.html";
+            });
+        });
+
+        function loadUserProfileSidebar(user) {
+            document.getElementById("sidebarName").textContent = user.HoTen || "Khách hàng";
+            const avatarUrl = "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.HoTen) + "&background=FF6600&color=fff";
+            document.getElementById("sidebarAvatar").src = avatarUrl;
+        }
+
+        async function loadOrderHistory(userId) {
+            try {
+                const res = await fetch(AppConfig.getUrl(`don-hang/lich-su?userId=${userId}`));
+                const data = await res.json();
+
+                document.getElementById("loadingText").style.display = "none";
+                const container = document.getElementById("orderListContainer");
+
+                if (!data.status || !data.data || data.data.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center; padding: 40px; color: #777;">
+                            <i class="fa-solid fa-box-open" style="font-size: 40px; margin-bottom: 10px;"></i>
+                            <p>Bạn chưa có đơn hàng nào.</p>
+                            <a href="index.html" style="color: #FF6600; text-decoration: underline;">Mua sắm ngay</a>
+                        </div>`;
+                    return;
+                }
+
+                const userJson = localStorage.getItem("user");
+                const currentUser = userJson ? JSON.parse(userJson) : {};
+                renderOrders(data.data, container, currentUser);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("loadingText").innerHTML = `<p style="color:red">Lỗi tải dữ liệu đơn hàng.</p>`;
+            }
+        }
+
+        function renderOrders(orders, container, currentUser) {
+            const STANDARD_SHIP_FEE = 30000; // Phí ship mặc định để fix lỗi DB
+            let html = "";
+            
+            orders.forEach(order => {
+                const statusText = getStatusText(order.TrangThai);
+                const isCancellable = order.TrangThai === "ChoXacNhan";
+                const date = new Date(order.NgayTao).toLocaleString('vi-VN');
+
+                // Lấy thông tin người nhận
+                const receiverName = order.NguoiNhan || order.HoTen || currentUser.HoTen || "Khách hàng";
+                const receiverPhone = order.SDT || order.SoDienThoai || currentUser.SoDienThoai || "";
+                
+                const safeName = receiverName.replace(/'/g, "\\'");
+                const safeAddr = (order.DiaChiGiao || "").replace(/'/g, "\\'");
+
+                // --- FIX LOGIC TỔNG TIỀN HIỂN THỊ Ở DANH SÁCH ---
+                // Vì database lưu thiếu phí ship, ta tự động cộng thêm 30k vào số tiền hiển thị
+                // Để đảm bảo List View khớp với số tiền thực tế (386k thay vì 356k)
+                const displayTotal = parseInt(order.TongTien) + STANDARD_SHIP_FEE;
+
+                html += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <span class="order-id">#DH${order.DonHangID}</span>
+                            <span class="order-date">${date}</span>
+                        </div>
+                        <span class="status-badge status-${order.TrangThai}">${statusText}</span>
+                    </div>
+                    <div class="order-body">
+                        <div class="order-info">
+                            <p><i class="fa-solid fa-user"></i> <strong>Người nhận:</strong> ${receiverName} ${receiverPhone ? '- ' + receiverPhone : ''}</p>
+                            <p><i class="fa-solid fa-location-dot"></i> <strong>Địa chỉ:</strong> ${order.DiaChiGiao}</p>
+                            <p><i class="fa-solid fa-money-bill"></i> <strong>TT:</strong> ${order.PhuongThucTT}</p>
+                            <p><strong>Tổng tiền:</strong> <span class="total-price">${formatMoney(displayTotal)}</span></p>
+                        </div>
+                        <div class="order-actions">
+                            <button class="btn-detail" onclick="viewDetail(${order.DonHangID}, ${displayTotal}, '${safeName}', '${receiverPhone}', '${safeAddr}')">Xem Chi Tiết</button>
+                            ${isCancellable ? `<button class="btn-cancel" onclick="cancelOrder(${order.DonHangID})">Hủy Đơn</button>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function cancelOrder(orderId) {
+            if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) return;
+
+            try {
+                const res = await fetch(AppConfig.getUrl("don-hang/cap-nhat"), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ DonHangID: orderId, TrangThai: "DaHuy" })
+                });
+
+                const data = await res.json();
+                if (data.status) {
+                    alert("Đã hủy đơn hàng thành công!");
+                    location.reload();
+                } else {
+                    alert(data.message || "Không thể hủy đơn hàng.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi kết nối Server.");
+            }
+        }
+
+        // --- HÀM XEM CHI TIẾT (ĐÃ FIX LOGIC SHIP) ---
+        async function viewDetail(orderId, finalTotal, name, phone, address) {
+            const modal = document.getElementById("orderDetailModal");
+            const modalBody = document.getElementById("modalBody");
+            
+            modal.style.display = "flex";
+            modalBody.innerHTML = '<div style="padding:40px; text-align:center;"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:#FF6600"></i><p style="margin-top:10px; color:#555;">Đang tải chi tiết...</p></div>';
+
+            try {
+                const res = await fetch(AppConfig.getUrl(`don-hang/chi-tiet?id=${orderId}`));
+                const data = await res.json();
+
+                if (data.status && data.data) {
+                    const items = data.data;
+                    let listHtml = "";
+                    let itemTotal = 0; 
+
+                    items.forEach(item => {
+                        const imgUrl = item.AnhBia && item.AnhBia.startsWith("http") ? item.AnhBia : `../img/${item.AnhBia}`;
+                        const thanhTien = item.DonGia * item.SoLuong;
+                        itemTotal += thanhTien;
+
+                        listHtml += `
+                        <div class="detail-item">
+                            <img src="${imgUrl}" class="detail-img" onerror="this.src='https://via.placeholder.com/60'">
+                            <div class="detail-info">
+                                <a href="chitietsanpham.html?id=${item.SachID}" class="detail-name">${item.TenSach}</a>
+                                <div class="detail-meta">
+                                    <span style="color:#555">${formatMoney(item.DonGia)}</span> x <strong>${item.SoLuong}</strong>
+                                </div>
+                            </div>
+                            <div style="font-weight:700; color:#333; margin-left:10px;">
+                                ${formatMoney(thanhTien)}
+                            </div>
+                        </div>`;
+                    });
+
+                    // --- LOGIC TÍNH TOÁN SHIP HOẶC GIẢM GIÁ ---
+                    // finalTotal nhận vào là ĐÃ CỘNG 30K từ renderOrders
+                    // itemTotal là tổng tiền hàng thuần túy
+                    
+                    let extraRowHtml = '';
+                    
+                    if (finalTotal > itemTotal) {
+                        const shipFee = finalTotal - itemTotal; // Sẽ ra ~30000
+                        extraRowHtml = `
+                        <div class="sum-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>${formatMoney(shipFee)}</span>
+                        </div>`;
+                    } 
+                    else if (finalTotal < itemTotal) {
+                        const discount = itemTotal - finalTotal;
+                        extraRowHtml = `
+                        <div class="sum-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>
+                        <div class="sum-row" style="color: #28a745; font-weight:600;">
+                            <span><i class="fa-solid fa-ticket"></i> Voucher / Giảm giá:</span>
+                            <span>- ${formatMoney(discount)}</span>
+                        </div>`;
+                    } else {
+                        extraRowHtml = `
+                        <div class="sum-row">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>`;
+                    }
+
+                    modalBody.innerHTML = `
+                    <div class="customer-info-section">
+                        <h4><i class="fa-solid fa-address-card"></i> Thông tin nhận hàng</h4>
+                        <div class="info-line"><strong>Người nhận:</strong> <span>${name}</span></div>
+                        <div class="info-line"><strong>Số điện thoại:</strong> <span>${phone}</span></div>
+                        <div class="info-line"><strong>Địa chỉ:</strong> <span>${address}</span></div>
+                    </div>
+
+                    <div style="margin-bottom:10px; font-weight:700; color:#555; font-size:14px; text-transform:uppercase;">Danh sách sản phẩm</div>
+                    ${listHtml}
+
+                    <div class="modal-summary">
+                        <div class="sum-row">
+                            <span>Tổng tiền hàng (${items.length} sản phẩm):</span>
+                            <span>${formatMoney(itemTotal)}</span>
+                        </div>
+                        ${extraRowHtml}
+                        <div class="sum-row final">
+                            <span>TỔNG THANH TOÁN:</span>
+                            <span>${formatMoney(finalTotal)}</span>
+                        </div>
+                    </div>`;
+
+                } else {
+                    modalBody.innerHTML = "<p class='text-center'>Không tìm thấy chi tiết đơn hàng.</p>";
+                }
+            } catch (err) {
+                console.error(err);
+                modalBody.innerHTML = "<p style='color:red; text-align:center;'>Lỗi kết nối đến máy chủ.</p>";
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("orderDetailModal").style.display = "none";
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'ChoXacNhan': return 'Chờ xác nhận';
+                case 'DangXuLy': return 'Đang xử lý';
+                case 'DangGiao': return 'Đang giao hàng';
+                case 'HoanThanh': return 'Hoàn thành';
+                case 'DaHuy': return 'Đã hủy';
+                default: return status;
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById("orderDetailModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>

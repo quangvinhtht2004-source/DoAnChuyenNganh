@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/KhuyenMai.php";
 require_once __DIR__ . "/../helper/response.php";
 
@@ -32,13 +33,10 @@ class KhuyenMaiController
         jsonResponse(true, "Chi tiết khuyến mãi", $data);
     }
 
-    /** 
-     * Kiểm tra mã & Tính tiền giảm 
-     * ✅ ĐÃ SỬA: Đọc từ $_GET thay vì JSON body (khớp với route POST nhưng dùng query params)
+    /** * Kiểm tra mã & Tính tiền giảm 
      */
     public function kiemTra()
     {
-        // Đọc từ query parameters
         $code = $_GET["code"] ?? "";
         $rawTotal = $_GET["total"] ?? 0;
         
@@ -50,28 +48,33 @@ class KhuyenMaiController
             jsonResponse(false, "Vui lòng nhập mã giảm giá");
         }
 
-        // Lấy thông tin mã
         $voucher = $this->model->getByCode(strtoupper($code));
         
         if (!$voucher) {
             jsonResponse(false, "Mã giảm giá không tồn tại");
         }
 
-        // 1. Kiểm tra số lượng
+        // --- 1. KIỂM TRA TRẠNG THÁI HOẠT ĐỘNG ---
+        if ($voucher["TrangThai"] == 0) {
+            jsonResponse(false, "Mã giảm giá này đang bị khóa hoặc ngưng hoạt động");
+        }
+
+        // --- 2. KIỂM TRA SỐ LƯỢNG ---
         if ($voucher["SoLuong"] <= 0) {
             jsonResponse(false, "Mã này đã hết lượt sử dụng");
         }
 
-        // 2. Kiểm tra hạn sử dụng
+        // --- 3. KIỂM TRA HẠN SỬ DỤNG ---
         if (!empty($voucher["NgayKetThuc"])) {
-            $today = date("Y-m-d"); 
-            $endDate = date("Y-m-d", strtotime($voucher["NgayKetThuc"]));
-            if ($today > $endDate) {
-                jsonResponse(false, "Mã giảm giá đã hết hạn vào ngày $endDate");
+            $now = time(); // Thời gian hiện tại (timestamp)
+            $endDate = strtotime($voucher["NgayKetThuc"]); // Chuyển ngày kết thúc sang timestamp
+            
+            if ($now > $endDate) {
+                jsonResponse(false, "Mã giảm giá đã hết hạn vào ngày " . date("d/m/Y H:i", $endDate));
             }
         }
 
-        // 3. Kiểm tra đơn hàng tối thiểu
+        // --- 4. KIỂM TRA ĐƠN TỐI THIỂU ---
         if ($tongTien < $voucher["DonToiThieu"]) {
             $thieu = number_format($voucher["DonToiThieu"] - $tongTien, 0, ',', '.');
             $min = number_format($voucher["DonToiThieu"], 0, ',', '.');
@@ -83,7 +86,7 @@ class KhuyenMaiController
         if ($voucher['LoaiKM'] == 'tien') {
             $tienGiam = (float)$voucher['GiaTri'];
         } else {
-            // Phần trăm: Tính toán và làm tròn
+            // Phần trăm
             $tienGiam = round($tongTien * ((float)$voucher['GiaTri'] / 100));
         }
 
@@ -95,7 +98,7 @@ class KhuyenMaiController
         // Trả về kết quả
         jsonResponse(true, "Áp dụng mã thành công", [
             'info' => $voucher,
-            'SoTienGiam' => $tienGiam,  // ✅ Key này khớp với frontend
+            'SoTienGiam' => $tienGiam,
             'tong_tien_sau_giam' => $tongTien - $tienGiam
         ]);
     }
@@ -109,9 +112,11 @@ class KhuyenMaiController
             jsonResponse(false, "Thiếu Code hoặc Giá trị");
         }
         
+        // Mặc định các giá trị nếu thiếu
         if(!isset($input["SoLuong"])) $input["SoLuong"] = 0;
         if(!isset($input["DonToiThieu"])) $input["DonToiThieu"] = 0;
-        if(!isset($input["LoaiKM"])) $input["LoaiKM"] = "phantram"; 
+        if(!isset($input["LoaiKM"])) $input["LoaiKM"] = "phantram";
+        if(!isset($input["TrangThai"])) $input["TrangThai"] = 1;
 
         $ok = $this->model->create($input);
         jsonResponse($ok, $ok ? "Thêm mã thành công" : "Mã đã tồn tại hoặc lỗi hệ thống");
@@ -125,6 +130,8 @@ class KhuyenMaiController
         if (empty($input["KhuyenMaiID"])) {
             jsonResponse(false, "Thiếu ID");
         }
+        
+        if(!isset($input["TrangThai"])) $input["TrangThai"] = 1;
 
         $ok = $this->model->update($input);
         jsonResponse($ok, $ok ? "Cập nhật thành công" : "Lỗi cập nhật");

@@ -7,27 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css"> 
-    
-    <style>
-        .otp-group {
-            display: flex;
-            gap: 10px;
-        }
-        .btn-send-otp {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 0 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
-            font-size: 13px;
-        }
-        .btn-send-otp:hover { background: #555; }
-        .btn-send-otp:disabled { background: #ccc; cursor: not-allowed; }
-    </style>
 </head>
 <body class="auth-body">
 
@@ -42,7 +21,7 @@
             
             <div class="auth-header-center">
                 <h1>Tạo tài khoản mới</h1>
-                <p>Đăng ký thành viên để theo dõi đơn hàng và nhận nhiều ưu đãi hấp dẫn từ VKDBookStore.</p>
+                <p>Đăng ký thành viên để theo dõi đơn hàng và nhận nhiều ưu đãi.</p>
             </div>
 
             <form id="registerForm" class="form-layout">
@@ -63,14 +42,18 @@
 
                 <div class="form-group">
                     <label class="form-label">Mã xác thực (OTP)</label>
-                    <div class="otp-group">
+                    <div class="otp-group" style="display: flex; gap: 10px;">
                         <div class="input-field-modern" style="flex: 1;">
-                            <input type="text" id="otpInput" placeholder="Nhập mã 6 số gửi về mail" maxlength="6" style="padding-left: 15px;">
+                            <input type="text" id="otpInput" placeholder="Nhập mã 6 số trong mail" maxlength="6" style="padding-left: 15px;">
                         </div>
-                        <button type="button" class="btn-send-otp" id="btnSendOTP">Lấy mã OTP</button>
+                        <button type="button" id="btnSendOTP" class="btn-send-otp" 
+                                style="padding: 0 15px; border-radius: 8px; font-weight: 600; cursor: pointer; background: #333; color: #fff; border: none; white-space: nowrap; font-size: 13px; transition: 0.3s;">
+                            Lấy mã
+                        </button>
                     </div>
-                    <small id="otpMessage" style="color: green; font-size: 12px; display: none; margin-top: 5px;">Mã OTP đã được gửi!</small>
+                    <small id="otpMessage" style="display: none; margin-top: 5px; font-size: 13px; font-weight: 500;"></small>
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">Số điện thoại</label>
                     <div class="input-field-modern">

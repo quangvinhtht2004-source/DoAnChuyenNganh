@@ -58,6 +58,7 @@
                     <button class="btn-add" onclick="openModalSach()"><i class="fa-solid fa-plus"></i> Thêm sách</button>
                 </div>
             </div>
+            
             <div class="table-box">
                 <table>
                     <thead>
@@ -77,6 +78,9 @@
                     <tbody id="tableBodySach"></tbody>
                 </table>
             </div>
+            
+            <div id="pagination" class="pagination-container">
+                </div>
         </div>
 
         <div id="tab-attribute" class="tab-content">
@@ -111,23 +115,45 @@
             <div class="modal-body">
                 <div class="modal-horizontal-layout">
                     <div class="left-col" style="flex: 1;">
+                        
                         <div class="form-group">
-                            <label>Ảnh bìa</label>
-                            <input type="file" id="fileAnhBia" accept="image/*" class="form-control" onchange="handleFileSelect(this)">
-                            <input type="hidden" name="AnhBia" id="hiddenTenAnh">
-                            
-                            <div class="img-preview-container" id="previewMain" onclick="document.getElementById('fileAnhBia').click()">
-                                <div class="img-placeholder"><i class="fa-regular fa-image"></i><br>Bấm để chọn ảnh</div>
-                                <img src="" style="display: none;">
+                            <label>Ảnh bìa chính <span style="color:red">*</span></label>
+                            <input type="file" id="fileMain" hidden onchange="handleFileSelect(this, 'hiddenMain', 'previewMain')">
+                            <input type="hidden" name="AnhBia" id="hiddenMain">
+                            <div class="img-preview-container" id="previewMain" onclick="document.getElementById('fileMain').click()" style="height: 180px;">
+                                <div class="img-placeholder"><i class="fa-regular fa-image"></i><br>Chọn ảnh chính</div>
+                                <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
                             </div>
                         </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ảnh phụ 1</label>
+                                <input type="file" id="fileSub1" hidden onchange="handleFileSelect(this, 'hiddenSub1', 'previewSub1')">
+                                <input type="hidden" name="AnhPhu1" id="hiddenSub1">
+                                <div class="img-preview-container" id="previewSub1" onclick="document.getElementById('fileSub1').click()" style="height: 90px;">
+                                    <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="img-placeholder" style="font-size: 10px;"><i class="fa-plus"></i><br>Ảnh 1</div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ảnh phụ 2</label>
+                                <input type="file" id="fileSub2" hidden onchange="handleFileSelect(this, 'hiddenSub2', 'previewSub2')">
+                                <input type="hidden" name="AnhPhu2" id="hiddenSub2">
+                                <div class="img-preview-container" id="previewSub2" onclick="document.getElementById('fileSub2').click()" style="height: 90px;">
+                                    <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="img-placeholder" style="font-size: 10px;"><i class="fa-plus"></i><br>Ảnh 2</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="status-update-box" style="margin-top: 15px;">
                             <div class="form-group">
                                 <label>Giá bán (VNĐ) <span style="color:red">*</span></label>
                                 <input type="number" name="Gia" required style="font-weight:bold; color:#d63031;" min="0">
                             </div>
                             <div class="form-group">
-                                <label>Giảm giá (%) [Max 50%]</label>
+                                <label>Giảm giá (%)</label>
                                 <input type="number" name="PhanTramGiam" value="0" min="0" max="50">
                             </div>
                         </div>
@@ -156,9 +182,8 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                             <div class="form-group">
                                 <label>Tác giả</label>
-                                <input type="text" id="inputTacGia" list="listTacGia" placeholder="Chọn hoặc nhập mới..." class="form-control">
-                                <datalist id="listTacGia">
-                                    </datalist>
+                                <input type="text" id="inputTacGia" list="listTacGia" placeholder="Chọn hoặc nhập..." class="form-control">
+                                <datalist id="listTacGia"></datalist>
                             </div>
 
                             <div class="form-group"><label>Thể loại</label><select name="TheLoaiID" id="selectTheLoai"></select></div>
@@ -167,7 +192,7 @@
                         
                         <div class="form-group">
                             <label>Mô tả ngắn</label>
-                            <textarea name="MoTa" style="height: 80px; resize: vertical;" placeholder="Giới thiệu nội dung sách..."></textarea>
+                            <textarea name="MoTa" style="height: 100px; resize: vertical;" placeholder="Giới thiệu nội dung sách..."></textarea>
                         </div>
                     </div>
                 </div>

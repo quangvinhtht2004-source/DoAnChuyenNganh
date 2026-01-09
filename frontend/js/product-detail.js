@@ -35,11 +35,9 @@ function formatMoney(num) {
 
 // Thêm vào giỏ hàng
 async function addDetailToCart(sachId) {
-    // Không còn ô nhập số lượng -> Mặc định là 1
     const qtyInput = document.getElementById('buyQty');
     const qty = qtyInput ? parseInt(qtyInput.value) : 1;
     
-    // Kiểm tra số lượng trước khi gọi API
     if (qty > currentStock) {
         alert(`Xin lỗi, sản phẩm này chỉ còn ${currentStock} cuốn trong kho!`);
         return;
@@ -189,8 +187,6 @@ async function loadProductDetail(id) {
         if (data.status && data.data) {
             const book = data.data;
             document.title = `${book.TenSach} | VKDBookStore`;
-            
-            // Cập nhật tồn kho
             currentStock = parseInt(book.SoLuong || 0);
 
             renderProductInfo(book);
@@ -212,20 +208,27 @@ function renderProductInfo(book) {
     const giaBan = book.GiaBan || (giaGoc * (1 - phanTram/100));
     const mainImgUrl = book.AnhBia && book.AnhBia.startsWith("http") ? book.AnhBia : `../img/${book.AnhBia}`;
     
-    document.getElementById("bc-category").textContent = book.TenTheLoai || "Sản phẩm";
+    // Breadcrumb
+    const catName = book.TenTheLoai || "Sản phẩm";
+    const catId = book.TheLoaiID;
+    document.getElementById("bc-category").innerHTML = 
+        `<a href="index.html?catId=${catId}" style="color: inherit; text-decoration: none;">${catName}</a>`;
     document.getElementById("bc-name").textContent = book.TenSach;
 
-    const danhSachAnhPhu = book.DanhSachAnh || [];
+    // Thumbnails
     let thumbsHTML = `<img src="${mainImgUrl}" class="thumb-item active" onclick="changeImage(this)">`;
-
-    if (danhSachAnhPhu && danhSachAnhPhu.length > 0) {
-        danhSachAnhPhu.forEach(imgName => {
-             const extraImgUrl = imgName.startsWith("http") ? imgName : `../img/${imgName}`;
-             thumbsHTML += `<img src="${extraImgUrl}" class="thumb-item" onclick="changeImage(this)">`;
-        });
+    if (book.AnhPhu1 && book.AnhPhu1 !== "") {
+        const img1 = book.AnhPhu1.startsWith("http") ? book.AnhPhu1 : `../img/${book.AnhPhu1}`;
+        thumbsHTML += `<img src="${img1}" class="thumb-item" onclick="changeImage(this)">`;
+    }
+    if (book.AnhPhu2 && book.AnhPhu2 !== "") {
+        const img2 = book.AnhPhu2.startsWith("http") ? book.AnhPhu2 : `../img/${book.AnhPhu2}`;
+        thumbsHTML += `<img src="${img2}" class="thumb-item" onclick="changeImage(this)">`;
     }
 
-    // [ĐÃ SỬA] Xóa phần div.qty-control chứa nút + - và input
+    const authorId = book.TacGiaID; 
+    const pubId = book.NhaXuatBanID; // Lấy ID Nhà xuất bản
+
     const mainHTML = `
     <div class="detail-gallery">
         <div class="main-img-wrap">
@@ -238,7 +241,9 @@ function renderProductInfo(book) {
     <div class="detail-info">
         <h1 class="detail-title">${book.TenSach}</h1>
         <div class="detail-meta-row">
-            <div style="color:#555">Tác giả: <a href="#" style="color:#0D5CB6; font-weight:600">${book.TenTacGia || "Đang cập nhật"}</a></div>
+            <div style="color:#555">
+                Tác giả: <a href="index.html?authorId=${authorId}" style="color:#0D5CB6; font-weight:600; text-decoration:none">${book.TenTacGia || "Đang cập nhật"}</a>
+            </div>
             <div style="border-left:1px solid #ddd; padding-left:15px; margin-left:15px">Mã sản phẩm: <strong>BOOK-${book.SachID}</strong></div>
         </div>
 
@@ -248,13 +253,31 @@ function renderProductInfo(book) {
         </div>
 
         <div class="info-grid">
-            <div class="info-row"><span class="info-label">Thể loại:</span><span class="info-val">${book.TenTheLoai || "Đang cập nhật"}</span></div>
-            <div class="info-row"><span class="info-label">Nhà xuất bản:</span><span class="info-val">${book.TenNhaXuatBan || "NXB Văn Học"}</span></div>
-            <div class="info-row"><span class="info-label">Năm xuất bản:</span><span class="info-val">${book.NamXuatBan || "2024"}</span></div>
-            <div class="info-row"><span class="info-label">Kích thước:</span><span class="info-val">${book.KichThuoc || "14 x 20.5 cm"}</span></div>
+            <div class="info-row">
+                <span class="info-label">Thể loại:</span>
+                <span class="info-val">
+                    <a href="index.html?catId=${catId}" style="color: #0D5CB6; text-decoration: none; font-weight: 500;">
+                        ${book.TenTheLoai || "Đang cập nhật"}
+                    </a>
+                </span>
+            </div>
+            
+            <div class="info-row">
+                <span class="info-label">Nhà xuất bản:</span>
+                <span class="info-val">
+                    <a href="index.html?pubId=${pubId}" style="color: #0D5CB6; text-decoration: none; font-weight: 500;">
+                        ${book.TenNhaXuatBan || "Đang cập nhật"}
+                    </a>
+                </span>
+            </div>
         </div>
 
         <div class="action-area">
+             <div class="qty-control" style="margin-bottom: 15px; display: flex; align-items: center;">
+                <span style="margin-right: 10px; font-weight: 500;">Số lượng:</span>
+                <input type="number" id="buyQty" value="1" min="1" max="${book.SoLuong}" style="width: 60px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                <span style="margin-left: 10px; color: #777; font-size: 0.9em;">(Còn ${book.SoLuong} sản phẩm)</span>
+            </div>
             <div class="btn-buy-group">
                 <button class="btn-add-cart-lg" onclick="addDetailToCart(${book.SachID})"><i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ</button>
                 <button class="btn-buy-now-lg" onclick="buyNow(${book.SachID})">Mua ngay</button>
@@ -279,9 +302,6 @@ function renderProductSpecs(book) {
                 <tr><th>Tác giả</th><td>${book.TenTacGia || 'Chưa rõ'}</td></tr>
                 <tr><th>Thể loại</th><td>${book.TenTheLoai || "Đang cập nhật"}</td></tr>
                 <tr><th>Nhà xuất bản</th><td>${book.TenNhaXuatBan || "Đang cập nhật"}</td></tr>
-                <tr><th>Năm xuất bản</th><td>${book.NamXuatBan || "Đang cập nhật"}</td></tr>
-                <tr><th>Kích thước</th><td>${book.KichThuoc || "14 x 20.5 cm"}</td></tr>
-                <tr><th>Trọng lượng</th><td>${book.TrongLuong ? book.TrongLuong + ' gr' : "300 gr"}</td></tr>
             </tbody>
         </table>
     `;
