@@ -39,48 +39,42 @@ class SachController {
     public function create() {
         $data = json_decode(file_get_contents("php://input"), true);
 
-        if (empty($data['TenSach']) || !isset($data['Gia'])) {
-            jsonResponse(false, "Tên sách và Giá là bắt buộc!");
-            return;
+        // 1. Validate Tên sách
+        if (empty($data['TenSach'])) {
+            jsonResponse(false, "Tên sách là bắt buộc!"); return;
         }
 
-        $tenSach = trim($data['TenSach']);
+        // 2. Validate Giá bán (> 0)
+        if (empty($data['Gia']) || floatval($data['Gia']) <= 0) {
+            jsonResponse(false, "Giá bán phải lớn hơn 0!"); return;
+        }
 
-        // [CHECK TRÙNG TÊN]
-        $existing = $this->model->checkExist($tenSach);
-        if ($existing) {
-            jsonResponse(false, "Tên sách '$tenSach' đã tồn tại trong hệ thống. Vui lòng đặt tên khác!");
+        // 3. Validate Giảm giá (0 - 50%)
+        $giamGia = intval($data['PhanTramGiam'] ?? 0);
+        if ($giamGia < 0 || $giamGia > 50) {
+            jsonResponse(false, "Giảm giá chỉ được phép từ 0% đến 50%!"); return;
+        }
+
+        // 4. Validate Tồn kho (>= 0)
+        $soLuong = intval($data['SoLuong'] ?? 0);
+        if ($soLuong < 0) {
+            jsonResponse(false, "Số lượng tồn kho không được âm!"); return;
+        }
+
+        // 5. Validate Trùng tên
+        // Lưu ý: Cần đảm bảo Model Sach.php đã có hàm checkName như tôi đã sửa ở bước trước
+        if ($this->model->checkName($data['TenSach'])) {
+            jsonResponse(false, "Tên sách '$data[TenSach]' đã tồn tại! Vui lòng đặt tên khác."); 
             return;
         }
 
         try {
-            $stmt = $this->db->prepare("
-                INSERT INTO Sach (TenSach, TacGiaID, TheLoaiID, NhaXuatBanID, 
-                                  Gia, PhanTramGiam, SoLuong, AnhBia, AnhPhu1, AnhPhu2, MoTa, TrangThai)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-
-            $result = $stmt->execute([
-                $tenSach,
-                !empty($data['TacGiaID']) ? intval($data['TacGiaID']) : null,
-                !empty($data['TheLoaiID']) ? intval($data['TheLoaiID']) : null,
-                !empty($data['NhaXuatBanID']) ? intval($data['NhaXuatBanID']) : null,
-                floatval($data['Gia']),
-                intval($data['PhanTramGiam'] ?? 0),
-                intval($data['SoLuong'] ?? 0),
-                $data['AnhBia'] ?? '',
-                $data['AnhPhu1'] ?? '', 
-                $data['AnhPhu2'] ?? '', 
-                $data['MoTa'] ?? '',
-                intval($data['TrangThai'] ?? 1)
-            ]);
-
-            if ($result) {
+            // Gọi hàm create từ Model để code gọn hơn
+            if ($this->model->create($data)) {
                 jsonResponse(true, "Thêm sách thành công");
             } else {
                 jsonResponse(false, "Lỗi SQL: Không thể thêm sách");
             }
-
         } catch (Exception $e) {
             jsonResponse(false, "Lỗi Server: " . $e->getMessage());
         }
@@ -91,52 +85,44 @@ class SachController {
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['SachID'])) {
-            jsonResponse(false, "Thiếu ID sách");
-            return;
+            jsonResponse(false, "Thiếu ID sách"); return;
         }
 
-        $id = intval($data['SachID']);
-        $tenSach = trim($data['TenSach']);
+        // 1. Validate Tên sách
+        if (empty($data['TenSach'])) {
+            jsonResponse(false, "Tên sách là bắt buộc!"); return;
+        }
 
-        // [CHECK TRÙNG TÊN] - Ngoại trừ chính nó
-        $existing = $this->model->checkExist($tenSach);
-        if ($existing && $existing['SachID'] != $id) {
-            jsonResponse(false, "Tên sách '$tenSach' đã được sử dụng bởi ID #" . $existing['SachID']);
+        // 2. Validate Giá bán (> 0)
+        if (empty($data['Gia']) || floatval($data['Gia']) <= 0) {
+            jsonResponse(false, "Giá bán phải lớn hơn 0!"); return;
+        }
+
+        // 3. Validate Giảm giá (0 - 50%)
+        $giamGia = intval($data['PhanTramGiam'] ?? 0);
+        if ($giamGia < 0 || $giamGia > 50) {
+            jsonResponse(false, "Giảm giá chỉ được phép từ 0% đến 50%!"); return;
+        }
+
+        // 4. Validate Tồn kho (>= 0)
+        $soLuong = intval($data['SoLuong'] ?? 0);
+        if ($soLuong < 0) {
+            jsonResponse(false, "Số lượng tồn kho không được âm!"); return;
+        }
+
+        // 5. Validate Trùng tên (Loại trừ chính ID đang sửa)
+        if ($this->model->checkName($data['TenSach'], $data['SachID'])) {
+            jsonResponse(false, "Tên sách '$data[TenSach]' đã tồn tại!"); 
             return;
         }
 
         try {
-            $stmt = $this->db->prepare("
-                UPDATE Sach SET
-                    TenSach = ?, TacGiaID = ?, TheLoaiID = ?, NhaXuatBanID = ?,
-                    Gia = ?, PhanTramGiam = ?, SoLuong = ?,
-                    AnhBia = ?, AnhPhu1 = ?, AnhPhu2 = ?, 
-                    MoTa = ?, TrangThai = ?
-                WHERE SachID = ?
-            ");
-
-            $result = $stmt->execute([
-                $tenSach,
-                !empty($data['TacGiaID']) ? intval($data['TacGiaID']) : null,
-                !empty($data['TheLoaiID']) ? intval($data['TheLoaiID']) : null,
-                !empty($data['NhaXuatBanID']) ? intval($data['NhaXuatBanID']) : null,
-                floatval($data['Gia']),
-                intval($data['PhanTramGiam'] ?? 0),
-                intval($data['SoLuong'] ?? 0),
-                $data['AnhBia'] ?? '',
-                $data['AnhPhu1'] ?? '', 
-                $data['AnhPhu2'] ?? '', 
-                $data['MoTa'] ?? '',
-                intval($data['TrangThai'] ?? 1),
-                $id
-            ]);
-
-            if ($result) {
+            // Gọi hàm update từ Model
+            if ($this->model->update($data)) {
                 jsonResponse(true, "Cập nhật thành công");
             } else {
                 jsonResponse(false, "Lỗi cập nhật SQL");
             }
-
         } catch (Exception $e) {
             jsonResponse(false, "Lỗi Server: " . $e->getMessage());
         }
@@ -147,24 +133,21 @@ class SachController {
         $data = json_decode(file_get_contents("php://input"), true);
 
         if (empty($data['SachID'])) {
-            jsonResponse(false, "Thiếu ID sách");
-            return;
+            jsonResponse(false, "Thiếu ID sách"); return;
         }
 
         try {
-            $stmt = $this->db->prepare("DELETE FROM Sach WHERE SachID = ?");
-            $result = $stmt->execute([intval($data['SachID'])]);
-
-            if ($result) {
+            // Gọi hàm delete từ Model
+            if ($this->model->delete(intval($data['SachID']))) {
                 jsonResponse(true, "Đã xóa sách vĩnh viễn");
             } else {
-                jsonResponse(false, "Xóa thất bại");
+                jsonResponse(false, "Xóa thất bại (Sách có thể không tồn tại)");
             }
 
         } catch (Exception $e) {
-            // Xử lý lỗi khóa ngoại (nếu sách đã có trong đơn hàng)
+            // Xử lý lỗi khóa ngoại (nếu sách đã có trong đơn hàng - mã lỗi 23000/1451)
             if (strpos($e->getMessage(), '1451') !== false || strpos($e->getMessage(), 'Constraint') !== false) {
-                 jsonResponse(false, "Không thể xóa: Sách này đang có trong đơn hàng!");
+                 jsonResponse(false, "Không thể xóa: Sách này đang có trong đơn hàng hoặc giỏ hàng!");
             } else {
                  jsonResponse(false, "Lỗi: " . $e->getMessage());
             }
@@ -172,7 +155,7 @@ class SachController {
     }
 
     // --- API: Public (Search, Filter...) ---
-   public function search() {
+    public function search() {
         $keyword = $_GET["keyword"] ?? "";
         $result = $this->model->search($keyword); 
         jsonResponse(true, "Kết quả", $result);

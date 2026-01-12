@@ -48,22 +48,31 @@ class Sach extends Model
     ";
 
     /** ================================
-     * [MỚI] KIỂM TRA TÊN SÁCH ĐÃ TỒN TẠI CHƯA
+     * [UPDATE] KIỂM TRA TRÙNG TÊN SÁCH
+     * Hỗ trợ loại trừ ID khi đang Cập nhật
      * ================================ */
-    public function checkExist($tenSach)
+    public function checkName($tenSach, $excludeID = null)
     {
-        // Kiểm tra chính xác tên sách
-        $sql = "SELECT SachID, TenSach FROM Sach WHERE TenSach = ?";
+        $sql = "SELECT COUNT(*) as count FROM Sach WHERE TenSach = ?";
+        $params = [trim($tenSach)];
+
+        if ($excludeID) {
+            $sql .= " AND SachID != ?";
+            $params[] = $excludeID;
+        }
+
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([trim($tenSach)]); 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $row['count'] > 0;
     }
 
     /** ================================
-     * 1. LẤY TẤT CẢ CHO ADMIN (Sắp xếp theo ID)
+     * 1. LẤY TẤT CẢ CHO ADMIN
      * ================================ */
     public function getAllAdmin() {
-        $sql = $this->baseSelect . " ORDER BY s.SachID ASC";
+        $sql = $this->baseSelect . " ORDER BY s.SachID ASC"; // Sửa thành DESC để sách mới lên đầu
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -82,11 +91,76 @@ class Sach extends Model
     }
 
     /** ================================
-     * 3. TÌM KIẾM SÁCH
+     * [MỚI] 3. THÊM SÁCH MỚI
+     * ================================ */
+    public function create($data)
+    {
+        $sql = "INSERT INTO Sach (TenSach, TacGiaID, TheLoaiID, NhaXuatBanID, Gia, PhanTramGiam, SoLuong, MoTa, AnhBia, TrangThai, NgayTao) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            trim($data['TenSach']),
+            $data['TacGiaID'],
+            $data['TheLoaiID'],
+            $data['NhaXuatBanID'],
+            $data['Gia'],
+            $data['PhanTramGiam'] ?? 0,
+            $data['SoLuong'] ?? 0,
+            $data['MoTa'] ?? '',
+            $data['AnhBia'] ?? null,
+            $data['TrangThai'] ?? 1
+        ]);
+    }
+
+    /** ================================
+     * [MỚI] 4. CẬP NHẬT SÁCH
+     * ================================ */
+    public function update($data)
+    {
+        $sql = "UPDATE Sach SET 
+                TenSach = ?, 
+                TacGiaID = ?, 
+                TheLoaiID = ?, 
+                NhaXuatBanID = ?, 
+                Gia = ?, 
+                PhanTramGiam = ?, 
+                SoLuong = ?, 
+                MoTa = ?, 
+                AnhBia = ?, 
+                TrangThai = ?
+                WHERE SachID = ?";
+        
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            trim($data['TenSach']),
+            $data['TacGiaID'],
+            $data['TheLoaiID'],
+            $data['NhaXuatBanID'],
+            $data['Gia'],
+            $data['PhanTramGiam'],
+            $data['SoLuong'],
+            $data['MoTa'],
+            $data['AnhBia'],
+            $data['TrangThai'],
+            $data['SachID']
+        ]);
+    }
+
+    /** ================================
+     * [MỚI] 5. XÓA SÁCH
+     * ================================ */
+    public function delete($id)
+    {
+        $stmt = $this->db->prepare("DELETE FROM Sach WHERE SachID = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /** ================================
+     * 6. TÌM KIẾM SÁCH (PUBLIC)
      * ================================ */
     public function search($keyword)
     {
-        // Thêm điều kiện OR cho TenTheLoai và TenNhaXuatBan
         $sql = $this->baseSelect . "
                 WHERE s.TrangThai = 1
                 AND (
@@ -99,13 +173,13 @@ class Sach extends Model
 
         $kw = "%$keyword%";
         $stmt = $this->db->prepare($sql);
-        // Truyền tham số 4 lần cho 4 dấu hỏi chấm (?)
         $stmt->execute([$kw, $kw, $kw, $kw]);
 
         return $this->processList($stmt->fetchAll(PDO::FETCH_ASSOC));
     }
+
     /** ================================
-     * 4. SÁCH MỚI VỀ
+     * 7. SÁCH MỚI VỀ
      * ================================ */
     public function getNewArrivals()
     {
@@ -121,7 +195,7 @@ class Sach extends Model
     }
 
     /** ================================
-     * 5. SÁCH BÁN CHẠY
+     * 8. SÁCH BÁN CHẠY
      * ================================ */
     public function getBestSellers()
     {
@@ -137,7 +211,7 @@ class Sach extends Model
     }
 
     /** ================================
-     * 6. LẤY THEO THỂ LOẠI
+     * 9. LẤY THEO THỂ LOẠI
      * ================================ */
     public function getByTheLoai($listIds)
     {
@@ -163,7 +237,7 @@ class Sach extends Model
     }
 
     /** ================================
-     * 7. CẬP NHẬT RATING & TỒN KHO
+     * 10. CẬP NHẬT RATING & TỒN KHO
      * ================================ */
     public function updateRating($SachID, $SoSao)
     {

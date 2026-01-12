@@ -94,18 +94,18 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                     <div class="form-group">
                         <label>Giá trị giảm <span style="color:red">*</span></label>
-                        <input type="number" name="GiaTri" required placeholder="Nhập số...">
+                        <input type="number" name="GiaTri" required placeholder="Nhập số..." min="0">
                     </div>
                     <div class="form-group">
                         <label>Đơn tối thiểu (VNĐ)</label>
-                        <input type="number" name="DonToiThieu" value="0" placeholder="0 = Không giới hạn">
+                        <input type="number" name="DonToiThieu" value="0" placeholder="0 = Không giới hạn" min="0">
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
                     <div class="form-group">
                         <label>Số lượng mã</label>
-                        <input type="number" name="SoLuong" value="100" placeholder="VD: 100">
+                        <input type="number" name="SoLuong" value="100" placeholder="VD: 100" min="0">
                     </div>
                     <div class="form-group">
                         <label>Ngày hết hạn</label>

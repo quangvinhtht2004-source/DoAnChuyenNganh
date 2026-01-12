@@ -173,7 +173,7 @@ window.openModalSach = function(sachId = null) {
 
     form.reset(); 
     
-    // [CẬP NHẬT] Reset viền đỏ của input tên sách
+    // Reset viền đỏ
     const nameInput = form.querySelector('[name="TenSach"]');
     if(nameInput) nameInput.style.borderColor = "#ddd";
 
@@ -219,7 +219,6 @@ window.openModalSach = function(sachId = null) {
         form.querySelector('[name="SachID"]').value = "";
     }
     modal.classList.add('show'); 
-    // Focus vào ô tên sách
     setTimeout(() => { if(nameInput) nameInput.focus(); }, 100);
 }
 
@@ -242,24 +241,38 @@ window.handleFileSelect = function(input, hiddenId, previewId) {
     }
 }
 
-// 6. LƯU DỮ LIỆU [CẬP NHẬT: CHECK TRÙNG TÊN]
+// 6. LƯU DỮ LIỆU (VALIDATE CHẶT CHẼ)
 window.saveDataSach = async function() {
     const form = document.getElementById('formSach');
     const formData = new FormData(form);
     const rawData = Object.fromEntries(formData.entries());
     const nameInput = form.querySelector('[name="TenSach"]');
 
-    const soLuong = parseInt(rawData.SoLuong || 0);
-    const giamGia = parseInt(rawData.PhanTramGiam || 0);
-    const giaBan = parseFloat(rawData.Gia || 0);
-
-    if (soLuong < 0 || giamGia >= 50 || giaBan <= 0) {
-        alert("⚠️ Vui lòng kiểm tra lại giá trị (Giá > 0, Giảm giá < 50%)!"); return;
-    }
-
-    if (!rawData.TenSach.trim()) {
+    // 1. Kiểm tra Tên sách
+    if (!rawData.TenSach || rawData.TenSach.trim() === "") {
         alert("⚠️ Vui lòng nhập tên sách!");
         if(nameInput) nameInput.focus();
+        return;
+    }
+
+    // 2. Kiểm tra Giá bán
+    const giaBan = parseFloat(rawData.Gia);
+    if (isNaN(giaBan) || giaBan <= 0) {
+        alert("⚠️ Giá bán phải lớn hơn 0!");
+        return;
+    }
+
+    // 3. Kiểm tra Giảm giá (Cho phép 50, chặn > 50)
+    const giamGia = parseInt(rawData.PhanTramGiam) || 0;
+    if (giamGia < 0 || giamGia > 50) {
+        alert("⚠️ Giảm giá không được vượt quá 50%!");
+        return;
+    }
+
+    // 4. Kiểm tra Tồn kho
+    const soLuong = parseInt(rawData.SoLuong);
+    if (isNaN(soLuong) || soLuong < 0) {
+        alert("⚠️ Số lượng tồn kho không được là số âm!");
         return;
     }
 
@@ -334,7 +347,7 @@ window.saveDataSach = async function() {
             loadBooks(); 
             loadMetadata(); 
         } else {
-            // HIỂN THỊ LỖI NẾU TRÙNG TÊN SÁCH
+            // HIỂN THỊ LỖI NẾU TRÙNG TÊN SÁCH (Được trả về từ Backend)
             alert("⚠️ " + result.message);
             if (result.message.toLowerCase().includes("tên sách") && nameInput) {
                 nameInput.style.borderColor = "red";
@@ -388,7 +401,6 @@ function applyFilter() {
     clearTimeout(searchTimeout);
     
     searchTimeout = setTimeout(() => {
-        // Nếu ô tìm kiếm trống -> hiển thị lại toàn bộ
         if (!keyword) { 
             currentPage = 1; 
             renderTable(allBooksData); 
@@ -396,13 +408,11 @@ function applyFilter() {
         }
 
         const filtered = allBooksData.filter(item => {
-            // Lấy tên từ dữ liệu gốc hoặc map
             const bookName = item.TenSach.toLowerCase();
             const authorName = (g_Authors[item.TacGiaID] || "").toLowerCase();
-            const categoryName = (g_Categories[item.TheLoaiID] || "").toLowerCase(); // Thêm Thể loại
-            const publisherName = (g_Publishers[item.NhaXuatBanID] || "").toLowerCase(); // Thêm NXB
+            const categoryName = (g_Categories[item.TheLoaiID] || "").toLowerCase();
+            const publisherName = (g_Publishers[item.NhaXuatBanID] || "").toLowerCase();
 
-            // Kiểm tra từ khóa có xuất hiện trong bất kỳ trường nào không
             return bookName.includes(keyword) || 
                    authorName.includes(keyword) ||
                    categoryName.includes(keyword) ||

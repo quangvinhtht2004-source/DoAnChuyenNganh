@@ -33,86 +33,87 @@ class KhuyenMaiController
         jsonResponse(true, "Chi tiết khuyến mãi", $data);
     }
 
-    /** * Kiểm tra mã & Tính tiền giảm 
-     */
+    /** Kiểm tra mã & Tính tiền giảm */
     public function kiemTra()
     {
         $code = $_GET["code"] ?? "";
         $rawTotal = $_GET["total"] ?? 0;
         
-        // Làm sạch input tiền
         $cleanTotal = preg_replace('/[^\d]/', '', $rawTotal);
-        $tongTien = (float) $cleanTotal;
-        
-        if (empty($code)) {
-            jsonResponse(false, "Vui lòng nhập mã giảm giá");
-        }
+        $total = intval($cleanTotal);
 
-        $voucher = $this->model->getByCode(strtoupper($code));
-        
-        if (!$voucher) {
+        if (!$code) jsonResponse(false, "Vui lòng nhập mã giảm giá");
+
+        $km = $this->model->getByCode($code);
+
+        if (!$km) {
             jsonResponse(false, "Mã giảm giá không tồn tại");
+            return;
         }
 
-        // --- 1. KIỂM TRA TRẠNG THÁI HOẠT ĐỘNG ---
-        if ($voucher["TrangThai"] == 0) {
-            jsonResponse(false, "Mã giảm giá này đang bị khóa hoặc ngưng hoạt động");
+        if ($km['TrangThai'] != 1) {
+            jsonResponse(false, "Mã giảm giá đang bị khóa hoặc chưa kích hoạt");
+            return;
         }
 
-        // --- 2. KIỂM TRA SỐ LƯỢNG ---
-        if ($voucher["SoLuong"] <= 0) {
-            jsonResponse(false, "Mã này đã hết lượt sử dụng");
+        if ($km['SoLuong'] <= 0) {
+            jsonResponse(false, "Mã giảm giá đã hết lượt sử dụng");
+            return;
         }
 
-        // --- 3. KIỂM TRA HẠN SỬ DỤNG ---
-        if (!empty($voucher["NgayKetThuc"])) {
-            $now = time(); // Thời gian hiện tại (timestamp)
-            $endDate = strtotime($voucher["NgayKetThuc"]); // Chuyển ngày kết thúc sang timestamp
-            
-            if ($now > $endDate) {
-                jsonResponse(false, "Mã giảm giá đã hết hạn vào ngày " . date("d/m/Y H:i", $endDate));
-            }
+        $now = date('Y-m-d');
+        if ($km['NgayKetThuc'] && $now > $km['NgayKetThuc']) {
+            jsonResponse(false, "Mã giảm giá đã hết hạn");
+            return;
         }
 
-        // --- 4. KIỂM TRA ĐƠN TỐI THIỂU ---
-        if ($tongTien < $voucher["DonToiThieu"]) {
-            $thieu = number_format($voucher["DonToiThieu"] - $tongTien, 0, ',', '.');
-            $min = number_format($voucher["DonToiThieu"], 0, ',', '.');
-            jsonResponse(false, "Đơn chưa đủ điều kiện (Tối thiểu $min đ). Mua thêm $thieu đ để dùng mã.");
+        if ($total < $km['DonToiThieu']) {
+            jsonResponse(false, "Đơn hàng chưa đạt giá trị tối thiểu: " . number_format($km['DonToiThieu']) . "đ");
+            return;
         }
 
-        // --- TÍNH TOÁN SỐ TIỀN GIẢM ---
-        $tienGiam = 0;
-        if ($voucher['LoaiKM'] == 'tien') {
-            $tienGiam = (float)$voucher['GiaTri'];
+        // Tính toán
+        $discount = 0;
+        if ($km['LoaiKM'] === 'phantram') {
+            $discount = ($total * $km['GiaTri']) / 100;
         } else {
-            // Phần trăm
-            $tienGiam = round($tongTien * ((float)$voucher['GiaTri'] / 100));
+            $discount = $km['GiaTri'];
         }
 
-        // Không giảm quá tổng tiền
-        if ($tienGiam > $tongTien) {
-            $tienGiam = $tongTien;
-        }
+        if ($discount > $total) $discount = $total; // Không giảm quá tiền đơn
 
-        // Trả về kết quả
-        jsonResponse(true, "Áp dụng mã thành công", [
-            'info' => $voucher,
-            'SoTienGiam' => $tienGiam,
-            'tong_tien_sau_giam' => $tongTien - $tienGiam
+        jsonResponse(true, "Áp dụng thành công", [
+            "KhuyenMaiID" => $km["KhuyenMaiID"],
+            "GiaTriGiam" => $discount,
+            "Code" => $km["Code"]
         ]);
     }
 
-    /** Tạo mới */
+    /** Tạo mới (ĐÃ THÊM VALIDATE SỐ LƯỢNG) */
     public function create()
     {
         $input = json_decode(file_get_contents("php://input"), true);
 
         if (empty($input["Code"]) || empty($input["GiaTri"])) {
             jsonResponse(false, "Thiếu Code hoặc Giá trị");
+            return;
         }
         
-        // Mặc định các giá trị nếu thiếu
+        // --- CHỈNH SỬA: Validate số âm ---
+        if (isset($input["SoLuong"]) && $input["SoLuong"] < 0) {
+            jsonResponse(false, "Số lượng không được là số âm!");
+            return;
+        }
+        if (isset($input["GiaTri"]) && $input["GiaTri"] < 0) {
+            jsonResponse(false, "Giá trị giảm không được là số âm!");
+            return;
+        }
+        if (isset($input["DonToiThieu"]) && $input["DonToiThieu"] < 0) {
+            jsonResponse(false, "Đơn tối thiểu không được là số âm!");
+            return;
+        }
+        // ---------------------------------
+        
         if(!isset($input["SoLuong"])) $input["SoLuong"] = 0;
         if(!isset($input["DonToiThieu"])) $input["DonToiThieu"] = 0;
         if(!isset($input["LoaiKM"])) $input["LoaiKM"] = "phantram";
@@ -122,14 +123,30 @@ class KhuyenMaiController
         jsonResponse($ok, $ok ? "Thêm mã thành công" : "Mã đã tồn tại hoặc lỗi hệ thống");
     }
 
-    /** Cập nhật */
+    /** Cập nhật (ĐÃ THÊM VALIDATE SỐ LƯỢNG) */
     public function update()
     {
         $input = json_decode(file_get_contents("php://input"), true);
 
         if (empty($input["KhuyenMaiID"])) {
             jsonResponse(false, "Thiếu ID");
+            return;
         }
+        
+        // --- CHỈNH SỬA: Validate số âm ---
+        if (isset($input["SoLuong"]) && $input["SoLuong"] < 0) {
+            jsonResponse(false, "Số lượng không được là số âm!");
+            return;
+        }
+        if (isset($input["GiaTri"]) && $input["GiaTri"] < 0) {
+            jsonResponse(false, "Giá trị giảm không được là số âm!");
+            return;
+        }
+        if (isset($input["DonToiThieu"]) && $input["DonToiThieu"] < 0) {
+            jsonResponse(false, "Đơn tối thiểu không được là số âm!");
+            return;
+        }
+        // ---------------------------------
         
         if(!isset($input["TrangThai"])) $input["TrangThai"] = 1;
 
@@ -141,13 +158,15 @@ class KhuyenMaiController
     public function delete()
     {
         $input = json_decode(file_get_contents("php://input"), true);
+        $id = $input["KhuyenMaiID"] ?? null;
 
-        if (empty($input["KhuyenMaiID"])) {
+        if (!$id) {
             jsonResponse(false, "Thiếu ID");
+            return;
         }
 
-        $ok = $this->model->delete($input["KhuyenMaiID"]);
-        jsonResponse($ok, $ok ? "Đã xóa mã giảm giá" : "Lỗi khi xóa");
+        $ok = $this->model->delete($id);
+        jsonResponse($ok, $ok ? "Xóa thành công" : "Lỗi xóa");
     }
 }
 ?>
