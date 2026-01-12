@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đơn Hàng | VKD Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="admin-container">
+
+     <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+           <li><a href="donhang.html" class="active"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+    <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="page-header-button">
+            <h2>Quản lý Đơn Hàng</h2>
+        </header>
+
+        <div class="filter-bar">
+            <input type="text" id="searchOrder" placeholder="Tìm mã đơn hoặc tên khách...">
+            <select id="filterStatus">
+                <option value="">Tất cả trạng thái</option>
+                <option value="ChoXacNhan">Chờ xác nhận</option>
+                <option value="DangGiao">Đang giao hàng</option>
+                <option value="HoanThanh">Hoàn thành</option>
+                <option value="DaHuy">Đã hủy</option>
+            </select>
+            <button class="btn-reset" onclick="loadDonHang()" title="Tải lại"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Ngày đặt</th>
+                        <th>Tổng tiền</th>
+                        <th>Trạng thái</th>
+                        <th style="text-align: center;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="donHangTable">
+                    <tr><td colspan="6" style="text-align:center; padding: 20px; color:var(--text-gray);">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div id="orderModal" class="modal">
+    <div class="modal-box" style="max-width: 1100px; width: 95%;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #E5E7EB;">
+            <h3 style="margin: 0;">Chi tiết đơn hàng <span id="modalOrderId" style="color:var(--primary-color)">#...</span></h3>
+            <button class="btn-icon" onclick="closeModal()" style="background:none; color:#666; font-size:20px;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        
+        <div class="modal-horizontal-layout">
+            
+            <div class="left-col">
+                <div class="order-info-card">
+                    <h4 style="margin-bottom: 15px; color: var(--text-dark); font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">
+                        <i class="fa-solid fa-user-tag"></i> Thông tin khách hàng
+                    </h4>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Người nhận:</span>
+                        <span class="info-value" id="detailName">...</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Số điện thoại:</span>
+                        <span class="info-value" id="detailPhone">...</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Ngày đặt:</span>
+                        <span class="info-value" id="detailDate">...</span>
+                    </div>
+                    <div class="info-row" style="border:none; flex-direction: column; gap: 5px;">
+                        <span class="info-label">Địa chỉ giao hàng:</span>
+                        <span class="info-value" id="detailAddress" style="text-align: left; max-width: 100%;">...</span>
+                    </div>
+                </div>
+
+                <div class="status-update-box">
+                    <h4 style="margin-bottom: 12px; color: var(--text-dark); font-size:13px; text-transform:uppercase;">
+                        <i class="fa-solid fa-pen-to-square"></i> Cập nhật trạng thái
+                    </h4>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <select id="updateStatus" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ddd;">
+                            <option value="ChoXacNhan">Chờ xác nhận</option>
+                            <option value="DangXuLy">Đang xử lý (Đóng gói)</option>
+                            <option value="DangGiao">Đang giao hàng</option>
+                            <option value="HoanThanh">Hoàn thành</option>
+                        </select>
+                    </div>
+                    <button class="btn-save" onclick="updateOrderStatus()" style="width:100%; justify-content:center;">
+                        <i class="fa-solid fa-floppy-disk" style="margin-right:5px;"></i> Lưu trạng thái
+                    </button>
+                </div>
+            </div>
+
+            <div class="right-col">
+                <h4 style="margin-bottom: 15px; color: var(--text-dark); font-size:14px;">
+                    <i class="fa-solid fa-box-open"></i> DANH SÁCH SẢN PHẨM
+                </h4>
+                <div class="table-box" style="box-shadow:none; border: 1px solid #F3F4F6; max-height: 450px; overflow-y: auto;">
+                    <table style="width: 100%;">
+                        <thead style="position: sticky; top: 0; background: #F9FAFB; z-index: 1;">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th style="text-align:right;">Đơn giá</th>
+                                <th style="text-align:center; width: 60px;">SL</th>
+                                <th style="text-align:right;">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderItemsTable">
+                            </tbody>
+                        <tfoot>
+                            <tr style="background-color: #F0FDF4;">
+                                <td colspan="3" style="text-align:right; font-weight:700; color:var(--text-dark); padding: 15px;">TỔNG THANH TOÁN:</td>
+                                <td id="detailTotal" style="text-align:right; font-weight:700; color:#166534; font-size:18px; padding: 15px;">0đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-actions" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+            <button class="btn-cancel" onclick="closeModal()">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-donhang.js"></script>
+</body>
+</html>

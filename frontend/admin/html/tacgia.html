@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tác giả | VKD Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css"> </head>
+<body>
+
+<div class="admin-container">
+     <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+           <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+           <li><a href="tacgia.html" class="active"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+    <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header-button">
+            <h2>Danh sách Tác giả</h2>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="searchInput" placeholder="Tìm tên tác giả..." style="padding: 10px; border:1px solid #ddd; border-radius:8px; width: 250px;">
+                <button class="btn-add" onclick="openModal()"><i class="fa-solid fa-plus"></i> Thêm mới</button>
+            </div>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">ID</th>
+                        <th>Tên Tác Giả</th>
+                        <th style="text-align: center; width: 150px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm tác giả</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="dataForm">
+            <input type="hidden" name="TacGiaID"> <div class="modal-body">
+                <div class="form-group">
+                    <label>Tên tác giả <span style="color:red">*</span></label>
+                    <input type="text" name="TenTacGia" required placeholder="Nhập tên tác giả...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+                <button type="button" class="btn-save" onclick="saveData()">Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/admin-tacgia.js"></script> 
+</body>
+</html>

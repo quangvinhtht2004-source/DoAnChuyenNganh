@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | VKD Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<div class="admin-container">
+
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        
+        <ul class="sidebar-menu">
+           <li><a href="dashboard.html" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+           <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+    <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+    <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        
+        <header class="dashboard-header">
+            <div class="welcome-text">
+                <h2>Tổng quan hệ thống</h2>
+                <p>Cập nhật tình hình kinh doanh và báo cáo hôm nay.</p>
+            </div>
+            
+            <div class="user-profile-badge">
+                <div style="text-align: right;">
+                    <small style="display:block; color:var(--text-gray); font-size:11px;">Xin chào,</small>
+                    <span id="adminName" style="font-weight:600; color:var(--primary-color);">Admin</span>
+                </div>
+                <div class="avatar-circle">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card" onclick="showDetail('revenue')">
+                <div class="stat-info">
+                    <h3>Doanh thu</h3>
+                    <p class="stat-num" id="totalRevenue">0đ</p>
+                </div>
+                <div class="stat-icon-box" style="background: #DCFCE7; color: #166534;">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="showDetail('orders')">
+                <div class="stat-info">
+                    <h3>Đơn hàng</h3>
+                    <p class="stat-num" id="totalOrders">0</p>
+                </div>
+                <div class="stat-icon-box" style="background: #DBEAFE; color: #1E40AF;">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="showDetail('books')">
+                <div class="stat-info">
+                    <h3>Sách đã bán</h3>
+                    <p class="stat-num" id="totalBooksSold">0</p>
+                </div>
+                <div class="stat-icon-box" style="background: #FEF3C7; color: #854D0E;">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+            </div>
+
+            <div class="stat-card" onclick="showDetail('users')">
+                <div class="stat-info">
+                    <h3>Tài Khoản</h3>
+                    <p class="stat-num" id="totalUsers">0</p>
+                </div>
+                <div class="stat-icon-box" style="background: #F3E8FF; color: #7E22CE;">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-box custom-card">
+                <div class="card-header-row">
+                    <h3><i class="fa-solid fa-chart-line" style="color: var(--primary-color);"></i> Thống kê doanh thu</h3>
+                    </div>
+
+                <div class="stat-list" id="revenueStatsList">
+                    <div style="text-align: center; padding: 40px; color: var(--text-gray);">
+                        <i class="fa-solid fa-chart-line" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p style="margin-top: 16px;">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-box custom-card">
+                <div class="card-header-row">
+                    <h3><i class="fa-solid fa-trophy" style="color: #6366f1;"></i> Top sách bán chạy</h3>
+                </div>
+
+                <div class="book-ranking-list" id="topBooksRanking">
+                    <div style="text-align: center; padding: 40px; color: var(--text-gray);">
+                        <i class="fa-solid fa-book-open" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p style="margin-top: 16px;">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recent-orders">
+            <div class="recent-orders-header">
+                <h3>Đơn hàng mới nhất</h3>
+                <a href="donhang.html" class="btn-link-view">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                            <th style="text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentOrdersTable">
+                        <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-gray);">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="dashboardDetailModal" class="modal">
+    <div class="modal-box large">
+        <div class="modal-header">
+            <h3 id="detailModalTitle">Chi tiết</h3>
+            <button class="btn-icon" onclick="closeDashboardModal()" style="background:none; color:#666; font-size:20px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <div class="table-box" style="flex: 1; overflow-y: auto; border: 1px solid var(--border-color); border-left:0; border-right:0; box-shadow: none; border-radius: 0;">
+            <table id="detailTable">
+                <thead id="detailThead"></thead>
+                <tbody id="detailTbody"></tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeDashboardModal()">Đóng</button>
+            <a href="#" id="viewAllLink" class="btn-save" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                Quản lý chi tiết <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-dashboard.js"></script>
+
+</body>
+</html>

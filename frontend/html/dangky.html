@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký | VKDBookStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css"> 
+</head>
+<body class="auth-body">
+
+    <header class="header-simple">
+        <div class="container">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+        </div>
+    </header>
+
+    <div class="register-wrapper-center">
+        <div class="register-card">
+            
+            <div class="auth-header-center">
+                <h1>Tạo tài khoản mới</h1>
+                <p>Đăng ký thành viên để theo dõi đơn hàng và nhận nhiều ưu đãi.</p>
+            </div>
+
+            <form id="registerForm" class="form-layout">
+                
+                <div class="form-group">
+                    <label class="form-label">Họ và tên</label>
+                    <div class="input-field-modern">
+                        <input type="text" id="fullName" placeholder="VD: Nguyễn Văn A" required style="padding-left: 15px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ Email</label>
+                    <div class="input-field-modern">
+                        <input type="email" id="email" placeholder="name@example.com" required style="padding-left: 15px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mã xác thực (OTP)</label>
+                    <div class="otp-group" style="display: flex; gap: 10px;">
+                        <div class="input-field-modern" style="flex: 1;">
+                            <input type="text" id="otpInput" placeholder="Nhập mã 6 số trong mail" maxlength="6" style="padding-left: 15px;">
+                        </div>
+                        <button type="button" id="btnSendOTP" class="btn-send-otp" 
+                                style="padding: 0 15px; border-radius: 8px; font-weight: 600; cursor: pointer; background: #333; color: #fff; border: none; white-space: nowrap; font-size: 13px; transition: 0.3s;">
+                            Lấy mã
+                        </button>
+                    </div>
+                    <small id="otpMessage" style="display: none; margin-top: 5px; font-size: 13px; font-weight: 500;"></small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại</label>
+                    <div class="input-field-modern">
+                        <input type="tel" id="phone" placeholder="09xxxxxxxx" required style="padding-left: 15px;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu</label>
+                    <div class="input-field-modern">
+                        <input type="password" id="password" placeholder="Tối thiểu 6 ký tự" required style="padding-left: 15px;">
+                        <span id="togglePasswordRegister" class="input-icon-right">
+                            <i class="fa-regular fa-eye-slash"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-check">
+                    <input type="checkbox" id="terms" required>
+                    <label for="terms">Tôi đồng ý với <a href="dieukhoan.html" target="_blank">Điều khoản & Điều kiện</a></label>
+                </div>
+
+                <button type="submit" class="btn-auth-primary" id="btnSubmit">Đăng ký tài khoản</button>
+            </form>
+
+            <p class="auth-bottom-link">
+                Bạn đã có tài khoản? <a href="dangnhap.html">Đăng nhập ngay</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/register.js"></script>
+</body>
+</html>
