@@ -526,7 +526,6 @@ button {
   margin-top: 0;
 }
 
-
 .nav-container {
   display: flex;
   align-items: center;
@@ -759,83 +758,138 @@ button {
   grid-template-columns: 260px 1fr;
   gap: 30px;
   align-items: start;
-  margin-top: 24px;
+  margin-top: 30px;
 }
 
-/* Sidebar hiển thị mặc định */
+/* Sidebar Wrapper - CẬP NHẬT: Static để không chạy theo khi cuộn */
 .sidebar-wrapper {
+  position: static !important;
+  top: auto !important;
   display: block;
-  position: sticky;
-  top: 100px; /* Trượt theo khi cuộn */
 }
 
 .content-area {
   width: 100%;
 }
 
-/* --- Sidebar Filters Styles (Từ HTML) --- */
-.filter-box {
+/* --- SIDEBAR FILTER STYLES MỚI (ACCORDION) --- */
+
+/* Khung bao ngoài của bộ lọc */
+.filter-box-custom {
   background: #fff;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #eee;
 }
 
-.filter-title {
-  background-color: var(--primary-color);
-  color: #fff;
-  font-size: 14px;
+/* Tiêu đề BỘ LỌC màu xanh Navy */
+.filter-header-custom {
+  background-color: #102A56;
+  color: #ffffff;
+  padding: 15px 20px;
   font-weight: 700;
-  padding: 12px 15px;
   text-transform: uppercase;
-  margin: 0;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.filter-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Nhóm chứa các nút Accordion */
+.accordion-group {
+  background: #fff;
+}
+
+/* Nút bấm Accordion */
+.accordion-btn {
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  padding: 15px 20px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: 0.3s;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Hiệu ứng khi di chuột vào nút Accordion */
+.accordion-btn:hover {
+  background-color: #f8f9fa;
+  color: var(--accent-color);
+}
+
+/* Trạng thái đang mở (Active) */
+.accordion-btn.active {
+  background-color: #fff;
+  color: var(--accent-color);
+  border-bottom: none;
+}
+
+/* Icon mũi tên trong nút Accordion */
+.accordion-btn .arrow-icon {
+  font-size: 12px;
+  color: #999;
+  transition: transform 0.3s ease;
+}
+
+/* Xoay mũi tên khi mở */
+.accordion-btn.active .arrow-icon {
+  transform: rotate(180deg);
+  color: var(--accent-color);
+}
+
+/* Nội dung bên trong Accordion (Danh sách) */
+.accordion-content {
+  display: none;
+  background-color: white;
+  overflow: hidden;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Danh sách link bên trong nội dung */
+.accordion-content .filter-list {
+  padding: 5px 0;
   max-height: 250px;
   overflow-y: auto;
+  list-style: none;
+  margin: 0;
 }
 
-/* Thanh cuộn sidebar */
-.filter-list::-webkit-scrollbar {
+/* Thanh cuộn cho danh sách */
+.accordion-content .filter-list::-webkit-scrollbar {
   width: 4px;
 }
-.filter-list::-webkit-scrollbar-thumb {
+
+.accordion-content .filter-list::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 4px;
 }
 
-.filter-list li {
-  border-bottom: 1px solid #f5f5f5;
-}
-.filter-list li:last-child {
-  border-bottom: none;
-}
-
-.filter-list li a {
+/* Link từng mục trong bộ lọc */
+.accordion-content .filter-list li a {
+  padding: 8px 20px 8px 35px;
   display: block;
-  padding: 10px 15px;
-  color: #444;
+  color: #555;
   font-size: 13px;
-  transition: all 0.2s;
+  transition: 0.2s;
   text-decoration: none;
 }
 
-.filter-list li a:hover {
-  background-color: #fff0e6;
+/* Hiệu ứng hover link */
+.accordion-content .filter-list li a:hover {
   color: var(--accent-color);
-  padding-left: 20px;
+  background: #fff5f0;
 }
 
-/* Hero Banner */
+/* --- Hero Banner (Slider) --- */
 .hero-modern {
   background: url('../img/kesach.jpg') no-repeat center center / cover;
   border-radius: 12px;

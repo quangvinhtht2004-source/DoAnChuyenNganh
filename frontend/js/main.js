@@ -231,25 +231,17 @@ async function quickFilter(type, value) {
         let filterTitle = "";
         
         // Lấy danh sách tất cả sách từ API (hoặc cache)
-        // Lưu ý: Nếu dữ liệu lớn, nên lọc từ phía Server (API) thay vì Client
         const resBooks = await fetch(AppConfig.getUrl("sach"));
         const dataBooks = await resBooks.json();
         const allBooks = dataBooks.data || [];
 
         // --- XỬ LÝ LỌC THEO TỪNG TRƯỜNG HỢP (SINGLE CRITERION) ---
-        // Mỗi lần chạy hàm này, logic bên dưới sẽ reset lại danh sách finalBooks
         
         if (type === 'cat') { // Lọc theo Danh mục
             if (value === 'all') {
                 finalBooks = allBooks;
                 filterTitle = "TẤT CẢ DANH MỤC";
             } else {
-                // Có thể dùng API lọc danh mục để tối ưu hơn nếu server hỗ trợ
-                // const resCat = await fetch(AppConfig.getUrl(`sach/loc-theo-danh-muc?ids=${value}`));
-                // const dataCat = await resCat.json();
-                // finalBooks = dataCat.data || [];
-                
-                // Hoặc lọc client side:
                 finalBooks = allBooks.filter(b => b.TheLoaiID == value);
                 
                 const catObj = globalSearchData.categories.find(c => c.TheLoaiID == value);
@@ -654,4 +646,32 @@ async function addToCartAndRedirect(id) {
             alert(data.message || "Lỗi");
         }
     } catch(e) { console.error(e); }
+}
+
+// ================================================================
+// 9. LOGIC ACCORDION SIDEBAR (MỚI)
+// ================================================================
+
+function toggleFilter(btn) {
+    // 1. Tìm phần nội dung ngay sau nút bấm
+    const content = btn.nextElementSibling;
+    
+    // 2. Kiểm tra trạng thái hiện tại (nếu đang ẩn hoặc chưa set display thì coi là đóng)
+    const isOpening = content.style.display === "none" || content.style.display === "";
+
+    // 3. Đóng tất cả các tab khác (giữ sidebar gọn gàng)
+    const allContents = document.querySelectorAll('.accordion-content');
+    const allBtns = document.querySelectorAll('.accordion-btn');
+    
+    allContents.forEach(div => div.style.display = 'none');
+    allBtns.forEach(b => b.classList.remove('active'));
+
+    // 4. Mở hoặc đóng tab hiện tại
+    if (isOpening) {
+        content.style.display = "block";
+        btn.classList.add("active");
+    } else {
+        content.style.display = "none";
+        btn.classList.remove("active");
+    }
 }
