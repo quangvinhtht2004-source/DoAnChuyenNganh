@@ -1356,3 +1356,22 @@ tbody tr:hover {
     background-position: right 12px top 50%;
     background-size: 10px auto;
 }
+ /* Style cho input có icon */
+        .input-with-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-with-icon i {
+            position: absolute;
+            left: 12px;
+            color: #9CA3AF;
+            font-size: 14px;
+            pointer-events: none;
+        }
+        .input-with-icon input {
+            padding-left: 38px !important;
+        }
+        .input-with-icon input:focus + i {
+            color: var(--primary-color);
+        }
