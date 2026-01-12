@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập | VKDBookStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css"> 
+</head>
+<body class="auth-body">
+
+    <header class="header-simple">
+        <div class="container">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+        </div>
+    </header>
+
+    <div class="register-wrapper-center">
+        <div class="register-card">
+            
+            <div class="auth-header-center">
+                <h1>Đăng nhập tài khoản ! </h1>
+                <p>Vui lòng đăng nhập để tiếp tục mua sắm và quản lý đơn hàng.</p>
+            </div>
+
+            <form id="loginForm" class="form-layout">
+                
+                <div class="form-group">
+                    <label class="form-label">Tài khoản (Email hoặc Họ tên)</label>
+                    <div class="input-field-modern">
+                        <input type="text" id="emailInput" placeholder="VD: Khách 1 hoặc email@example.com" required style="padding-left: 15px;">
+                    </div>
+                </div>
+
+             <div class="form-group">
+    <label class="form-label">Mật khẩu</label>
+    <div class="input-field-modern">
+        <input type="password" id="passInput" placeholder="••••••••" required style="padding-left: 15px;">
+        <span id="togglePasswordLogin" class="input-icon-right">
+            <i class="fa-regular fa-eye-slash"></i>
+        </span>
+    </div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+    <div class="form-check" style="margin-bottom: 0;"> 
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe" style="cursor: pointer;">Ghi nhớ đăng nhập</label>
+    </div>
+
+    <a href="quenmatkhau.html" style="font-size:13px; color:#FF6600; font-weight:600; text-decoration: none;">
+        Quên mật khẩu?
+    </a>
+</div>
+
+                <button type="submit" class="btn-auth-primary">Đăng nhập</button>
+            </form>
+
+            <p class="auth-bottom-link">
+                Bạn chưa có tài khoản? <a href="dangky.html">Đăng ký ngay</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/login.js"></script>
+</body>
+</html>

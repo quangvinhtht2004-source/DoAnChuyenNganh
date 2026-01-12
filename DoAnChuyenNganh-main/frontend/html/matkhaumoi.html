@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt Lại Mật Khẩu | VKDBookStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-body">
+    <header class="header-simple">
+        <div class="container">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+        </div>
+    </header>
+
+    <div class="register-wrapper-center">
+        <div class="register-card">
+            <div class="auth-header-center">
+                <h1>Đặt lại mật khẩu</h1>
+                <p>Vui lòng nhập mật khẩu mới cho tài khoản của bạn.</p>
+            </div>
+
+            <form id="resetForm" class="form-layout">
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu mới</label>
+                    <div class="input-field-modern">
+                        <input type="password" id="newPass" placeholder="Tối thiểu 6 ký tự" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nhập lại mật khẩu</label>
+                    <div class="input-field-modern">
+                        <input type="password" id="confirmPass" placeholder="Nhập lại mật khẩu trên" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth-primary">Cập nhật mật khẩu</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/matkhaumoi.js"></script> </body>
+    
+</body>
+</html>

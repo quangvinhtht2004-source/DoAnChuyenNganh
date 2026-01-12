@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khuyến mãi | VKD Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<div class="admin-container">
+     <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html" class="active"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+            <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+            <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header-button">
+            <h2>Danh sách Mã giảm giá</h2>
+            <button class="btn-add" onclick="openModal()"><i class="fa-solid fa-plus"></i> Tạo mã mới</button>
+        </div>
+
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th>Mã Code</th>
+                        <th>Loại</th>
+                        <th>Giá trị</th>
+                        <th>Điều kiện / SL</th>
+                        <th>Hạn dùng</th>
+                        <th style="text-align: center;">Trạng thái</th>
+                        <th style="text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitle">Thêm mã mới</h3>
+            <button class="btn-icon" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="dataForm">
+            <input type="hidden" name="KhuyenMaiID">
+            
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label>Mã Code <span style="color:red">*</span></label>
+                        <input type="text" name="Code" required placeholder="VD: TET2026" style="font-weight:bold; text-transform:uppercase; letter-spacing: 1px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Loại khuyến mãi</label>
+                        <select name="LoaiKM" onchange="updatePlaceholder()">
+                            <option value="phantram">Giảm theo phần trăm (%)</option>
+                            <option value="tien">Giảm theo tiền mặt (VNĐ)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label>Giá trị giảm <span style="color:red">*</span></label>
+                        <input type="number" name="GiaTri" required placeholder="Nhập số..." min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Đơn tối thiểu (VNĐ)</label>
+                        <input type="number" name="DonToiThieu" value="0" placeholder="0 = Không giới hạn" min="0">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Số lượng mã</label>
+                        <input type="number" name="SoLuong" value="100" placeholder="VD: 100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Ngày hết hạn</label>
+                        <input type="date" name="NgayKetThuc">
+                        <small style="color:#666; font-size:11px;">Bỏ trống = Vĩnh viễn</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Trạng thái</label>
+                        <select name="TrangThai" style="font-weight: 500;">
+                            <option value="1">Đang hoạt động</option>
+                            <option value="0">Tạm khóa / Ẩn</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal()">Hủy bỏ</button>
+                <button type="button" class="btn-save" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> Lưu mã</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-khuyenmai.js"></script> 
+</body>
+</html>

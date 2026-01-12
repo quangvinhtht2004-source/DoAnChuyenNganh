@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Người dùng | VKD Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+
+</head>
+<body>
+
+<div class="admin-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+            <p class="menu-title">Kho sách</p>
+            <li><a href="sach.html"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+            <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+            <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html" class="active"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <h2 style="font-size: 24px; font-weight: 700; color: var(--primary-color);">Quản lý nhân sự</h2>
+
+        <div class="user-group-title"><i class="fa-solid fa-user-shield"></i> CHỦ CỬA HÀNG (ADMIN)</div>
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th style="text-align: center;">Vai Trò</th>
+                    </tr>
+                </thead>
+                <tbody id="listAdmin"></tbody>
+            </table>
+        </div>
+
+        <div class="user-group-title" style="margin-top: 30px;"><i class="fa-solid fa-users"></i> KHÁCH HÀNG (MEMBER)</div>
+        <div class="table-box">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ Tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th style="text-align: center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="listMember"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-users.js"></script>
+</body>
+</html>

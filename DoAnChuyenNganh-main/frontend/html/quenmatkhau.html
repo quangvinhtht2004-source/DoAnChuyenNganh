@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quên Mật Khẩu | VKDBookStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-body">
+    <header class="header-simple">
+        <div class="container">
+            <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+        </div>
+    </header>
+
+    <div class="register-wrapper-center">
+        <div class="register-card">
+            <div class="auth-header-center">
+                <h1>Khôi phục mật khẩu</h1>
+                <p>Nhập email để nhận mã xác thực.</p>
+            </div>
+
+            <div id="step1">
+                <div class="form-group">
+                    <label class="form-label">Email của bạn</label>
+                    <div class="input-field-modern">
+                        <input type="email" id="email" placeholder="name@example.com">
+                    </div>
+                </div>
+                <button id="btnGetCode" class="btn-auth-primary">Lấy mã xác thực</button>
+            </div>
+
+            <div id="step2" style="display: none; margin-top: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Nhập mã OTP (6 số)</label>
+                    <div class="input-field-modern">
+                        <input type="text" id="otpInput" maxlength="6" placeholder="------" style="letter-spacing: 5px; text-align: center; font-weight: bold;">
+                    </div>
+                </div>
+                <button id="btnVerifyOtp" class="btn-auth-primary" style="background: #28a745;">Xác nhận OTP</button>
+            </div>
+
+            <p class="auth-bottom-link">
+                <a href="dangnhap.html">Quay lại đăng nhập</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/quenmatkhau.js"></script>
+    
+    
+</body>
+</html>

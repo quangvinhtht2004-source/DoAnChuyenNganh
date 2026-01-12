@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Kho Sách | VKD Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<div class="admin-container">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-book-open" style="margin-right: 10px;"></i> VKD Admin
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            
+            <p class="menu-title">Bán hàng</p>
+            <li><a href="donhang.html"><i class="fa-solid fa-receipt"></i> Quản lý đơn hàng</a></li>
+            <li><a href="khuyenmai.html"><i class="fa-solid fa-ticket"></i> Khuyến mãi</a></li>
+
+            <p class="menu-title">Kho sách</p>
+            <li><a href="sach.html" class="active"><i class="fa-solid fa-book"></i> Quản lý Sách</a></li>
+            <li><a href="tacgia.html"><i class="fa-solid fa-user-pen"></i>Quản lý Tác giả</a></li>
+            <li><a href="theloai.html"><i class="fa-solid fa-layer-group"></i>Quản lý Thể loại</a></li>
+            <li><a href="nhaxuatban.html"><i class="fa-solid fa-building"></i>Quản ly Nhà xuất bản</a></li>
+            
+            <p class="menu-title">Hệ thống</p>
+            <li><a href="users.html"><i class="fa-solid fa-users"></i> Người dùng</a></li>
+            <li><a href="reviews.html"><i class="fa-solid fa-star"></i> Đánh giá</a></li>
+
+            <li style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top:10px;">
+                <a href="#" onclick="logoutAdmin()" style="color: var(--danger-text);"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('sach')"><i class="fa-solid fa-book"></i> Sách</button>
+        </div>
+
+        <div id="tab-sach" class="tab-content active">
+            <div class="page-header-button">
+                <h2>Danh sách Sách</h2>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div class="search-wrapper">
+                        <input type="text" id="searchBook" placeholder="Tìm theo tên, tác giả, thể loại, NXB...">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    </div>
+
+                    <button class="btn-add" onclick="openModalSach()"><i class="fa-solid fa-plus"></i> Thêm sách</button>
+                </div>
+            </div>
+            
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 60px;">Ảnh</th> 
+                            <th style="width: 25%;">Tên sách</th>
+                            <th>Tác giả</th>
+                            <th>Thể loại</th>
+                            <th>NXB</th>
+                            <th>Giá bán</th>
+                            <th>Kho</th>
+                            <th>Trạng thái</th>
+                            <th style="text-align: center;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodySach"></tbody>
+                </table>
+            </div>
+            
+            <div id="pagination" class="pagination-container">
+                </div>
+        </div>
+
+        <div id="tab-attribute" class="tab-content">
+            <div class="page-header-button">
+                <h2 id="attrTitle">Quản lý...</h2>
+                <button class="btn-add" onclick="openModalAttr()"><i class="fa-solid fa-plus"></i> Thêm mới</button>
+            </div>
+            <div class="table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th id="attrNameHeader">Tên...</th>
+                            <th style="text-align: center; width: 150px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyAttr"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="editModalSach" class="modal">
+    <div class="modal-box large">
+        <div class="modal-header">
+            <h3 id="modalTitleSach">Thêm mới</h3>
+            <button class="btn-icon" onclick="closeModal('editModalSach')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="formSach">
+            <input type="hidden" name="SachID">
+            <div class="modal-body">
+                <div class="modal-horizontal-layout">
+                    <div class="left-col" style="flex: 1;">
+                        
+                        <div class="form-group">
+                            <label>Ảnh bìa chính <span style="color:red">*</span></label>
+                            <input type="file" id="fileMain" hidden onchange="handleFileSelect(this, 'hiddenMain', 'previewMain')">
+                            <input type="hidden" name="AnhBia" id="hiddenMain">
+                            <div class="img-preview-container" id="previewMain" onclick="document.getElementById('fileMain').click()" style="height: 180px;">
+                                <div class="img-placeholder"><i class="fa-regular fa-image"></i><br>Chọn ảnh chính</div>
+                                <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ảnh phụ 1</label>
+                                <input type="file" id="fileSub1" hidden onchange="handleFileSelect(this, 'hiddenSub1', 'previewSub1')">
+                                <input type="hidden" name="AnhPhu1" id="hiddenSub1">
+                                <div class="img-preview-container" id="previewSub1" onclick="document.getElementById('fileSub1').click()" style="height: 90px;">
+                                    <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="img-placeholder" style="font-size: 10px;"><i class="fa-plus"></i><br>Ảnh 1</div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Ảnh phụ 2</label>
+                                <input type="file" id="fileSub2" hidden onchange="handleFileSelect(this, 'hiddenSub2', 'previewSub2')">
+                                <input type="hidden" name="AnhPhu2" id="hiddenSub2">
+                                <div class="img-preview-container" id="previewSub2" onclick="document.getElementById('fileSub2').click()" style="height: 90px;">
+                                    <img src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="img-placeholder" style="font-size: 10px;"><i class="fa-plus"></i><br>Ảnh 2</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="status-update-box" style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label>Giá bán (VNĐ) <span style="color:red">*</span></label>
+                                <input type="number" name="Gia" required style="font-weight:bold; color:#d63031;" min="1000" step="1000" placeholder="VD: 50000">
+                            </div>
+                            <div class="form-group">
+                                <label>Giảm giá (%)</label>
+                                <input type="number" name="PhanTramGiam" value="0" min="0" max="50" placeholder="0 - 50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="right-col" style="flex: 2; padding-left: 20px;">
+                        <div class="form-group">
+                            <label>Tên sách <span style="color:red">*</span></label>
+                            <input type="text" name="TenSach" required style="font-weight: 600; font-size: 15px;" placeholder="Nhập tên sách đầy đủ...">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Tồn kho <span style="color:red">*</span></label>
+                                <input type="number" name="SoLuong" required min="0" value="0" placeholder="Số lượng...">
+                            </div>
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select name="TrangThai">
+                                    <option value="1">Đang bán</option>
+                                    <option value="0">Ngừng bán</option>
+                                    <option value="2">Hết hàng</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label>Tác giả</label>
+                                <input type="text" id="inputTacGia" list="listTacGia" placeholder="Chọn hoặc nhập..." class="form-control">
+                                <datalist id="listTacGia"></datalist>
+                            </div>
+
+                            <div class="form-group"><label>Thể loại</label><select name="TheLoaiID" id="selectTheLoai"></select></div>
+                            <div class="form-group"><label>NXB</label><select name="NhaXuatBanID" id="selectNXB"></select></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Mô tả ngắn</label>
+                            <textarea name="MoTa" style="height: 100px; resize: vertical;" placeholder="Giới thiệu nội dung sách..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('editModalSach')">Hủy bỏ</button>
+                <button type="button" class="btn-save" onclick="saveDataSach()"><i class="fa-solid fa-floppy-disk"></i> Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="editModalAttr" class="modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="modalTitleAttr">Thêm mới</h3>
+            <button class="btn-icon" onclick="closeModal('editModalAttr')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="formAttr">
+            <input type="hidden" name="ID">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label id="lblAttrName">Tên...</label>
+                    <input type="text" name="Name" required placeholder="Nhập tên...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeModal('editModalAttr')">Hủy</button>
+                <button type="button" class="btn-save" onclick="saveDataAttr()">Lưu lại</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/config.js"></script>
+<script src="../js/auth-middleware.js"></script>
+<script src="../js/admin-sach.js"></script> 
+
+</body>
+</html>

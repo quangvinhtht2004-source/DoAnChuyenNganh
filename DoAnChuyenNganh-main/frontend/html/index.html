@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VKDBookStore | Trang Chủ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <header class="header-new">
+        <div class="top-bar">
+            <div class="container top-bar-inner">
+                <div class="top-left">
+                    <span><i class="fa-solid fa-phone"></i> 0707 189 144</span>
+                    <span><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</span>
+                     <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
+                </div>
+
+                <div class="top-right">
+                    <div id="loginBtn" class="auth-links">
+                        <a href="dangnhap.html">ĐĂNG NHẬP</a>
+                        <span class="sep">|</span>
+                        <a href="dangky.html">ĐĂNG KÝ</a>
+                    </div>
+
+                    <div id="userInfoContainer" class="user-dropdown-top" style="display:none;">
+                        <div class="user-info-top" id="userInfo">
+                            <i class="fa-regular fa-user"></i> <span id="userName">User</span>
+                        </div>
+                        <div class="user-menu">
+                            <a href="profile.html" class="user-menu-item"><i class="fa-solid fa-user"></i> Tài khoản</a>
+                            <a href="donhang.html" class="user-menu-item"><i class="fa-solid fa-box"></i> Đơn hàng</a>
+                            <a href="#" id="logoutBtn" class="user-menu-item logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="header-main">
+            <div class="container header-main-inner">
+                <a href="index.html" class="logo">VKD<span>BOOKSTORE</span></a>
+
+                <div class="search-box-custom">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm sách, tác giả..." autocomplete="off">
+                    <button class="search-btn-custom" onclick="handleSearch()">
+                        Tìm kiếm
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                </div>
+
+                <div class="hotline-box">
+                    <div class="icon-phone">
+                        <i class="fa-solid fa-phone-volume"></i>
+                    </div>
+                    <div class="hotline-text">
+                        <span>Tư vấn bán hàng</span>
+                        <strong>0707 189 144</strong>
+                    </div>
+                </div>
+
+                <a href="giohang.html" class="cart-tab">
+                    <div class="cart-icon-wrap">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span class="badge" id="cartBadge">0</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container nav-container">
+
+            <div class="header-filter-wrapper">
+                <div class="header-filter-btn">
+                    <i class="fa-solid fa-bars"></i> <span>DANH MỤC SẢN PHẨM</span>
+                </div>
+
+                <div class="mega-menu">
+                    <ul class="mega-menu-sidebar">
+                        <li class="menu-item active" onmouseover="openFilterTab(event, 'tab-category')">
+                            <span>Thể loại</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-author')">
+                            <span>Tác giả</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onmouseover="openFilterTab(event, 'tab-publisher')">
+                            <span>Nhà xuất bản</span> <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="menu-item" onclick="quickFilter('all', 'all')">
+                            <span><strong>Tất cả sản phẩm</strong></span>
+                        </li>
+                    </ul>
+
+                    <div class="mega-menu-content">
+                        <div id="tab-category" class="menu-tab-content active">
+                            <h4 class="mega-tab-title">Khám phá theo Thể loại</h4>
+                            <div id="megaCategoryList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải danh mục...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-author" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Tác giả nổi bật</h4>
+                            <div id="megaAuthorList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải tác giả...</p>
+                            </div>
+                        </div>
+
+                        <div id="tab-publisher" class="menu-tab-content">
+                            <h4 class="mega-tab-title">Nhà xuất bản uy tín</h4>
+                            <div id="megaPublisherList" class="mega-vertical-list">
+                                <p class="loading-text">Đang tải nhà xuất bản...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-links-list">
+                <a href="index.html" class="active">TRANG CHỦ</a>
+                <a href="index.html?catId=10">MANGA - COMIC</a>
+                <a href="index.html?catId=6">TIỂU THUYẾT</a>
+                <a href="index.html?catId=8">GIÁO TRÌNH</a>
+                <a href="index.html?catId=7">KINH DỊ</a>
+                <a href="index.html?catId=9">TRINH THÁM</a>
+                <a href="index.html?catId=3">TÂM LINH</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        
+        <div class="main-layout">
+            <!-- Phần trên: Sidebar + Banner ngang hàng -->
+            <div class="top-section">
+                <div class="sidebar-wrapper">
+                    <div class="filter-box-custom">
+                        <div class="filter-header-custom">
+                            <i class="fa-solid fa-filter"></i> Bộ LỌC
+                        </div>
+                        
+                        <div class="accordion-group">
+                            
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-list"></i> Thể Loại</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarCategory">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
+
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-pen-nib"></i> Tác Giả</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarAuthor">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
+
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-building"></i> Nhà Xuất Bản</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarPublisher">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
+
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-money-bill-wave"></i> Mức Giá</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list">
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '0-50000')">Dưới 50.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '50000-100000')">50.000đ - 100.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '100000-200000')">100.000đ - 200.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '200000-300000')">200.000đ - 300.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '300000-max')">Trên 300.000đ</a></li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                
+                <section class="hero-modern">
+                    <div class="hero-modern-content">
+                        <h1 class="hero-title-big">VKDBOOKSTORE <br> <span>2025</span></h1>
+                        <p class="hero-text">
+                            Tại VKDBOOKSTORE, chúng tôi tin rằng mỗi cuốn sách là một thế giới, mỗi trang giấy là một hành trình khám phá vô tận.
+                        </p>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Phần dưới: Nội dung sách full width -->
+            <div class="content-area">
+
+                <section class="book-section" id="searchResultSection" style="display: none;">
+                    <div class="section-header-line">
+                        <h2 class="section-title">KẾT QUẢ LỌC</h2>
+                        <a href="#" onclick="location.reload()" style="float:right; font-size:13px; color:#0066CC">
+                            <i class="fa-solid fa-rotate-left"></i> Quay lại trang chủ
+                        </a>
+                    </div>
+                    <div class="product-grid" id="searchResultContainer"></div>
+                </section>
+
+                <div id="homeSections">
+                    <section class="book-section no-bg">
+                        <div class="section-header-simple">
+                            <h2 class="section-title-simple">Sách mới về</h2>
+                        </div>
+                        <div class="product-grid" id="newBooksContainer"></div>
+
+                        <div class="view-more-wrap">
+                            <a href="sachmoi.html" class="btn-view-more-orange" style="display:inline-block; text-decoration:none;">Xem Thêm</a>
+                        </div>
+                    </section>
+
+                    <div style="height:50px;"></div>
+
+                    <section class="book-section no-bg">
+                        <div class="section-header-simple">
+                            <h2 class="section-title-simple">Xu hướng mua sắm</h2>
+                        </div>
+                        <div class="product-grid" id="bestSalesContainer"></div>
+
+                        <div class="view-more-wrap">
+                            <a href="banchay.html" class="btn-view-more-orange" style="display:inline-block; text-decoration:none;">Xem Thêm</a>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <a href="#" class="footer-logo">VKD<span>BOOKSTORE</span></a>
+                    <p class="footer-desc">
+                        180 Cao Lỗ, Phường 4, Quận 8, TP.HCM<br>
+                        Công Ty Cổ Phần Phát Hành Sách VKD
+                    </p>
+                    <ul class="contact-info">
+                        <li><i class="fa-solid fa-location-dot"></i> 180 cao lỗ , Q.8, TP.HCM</li>
+                        <li><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</li>
+                        <li><i class="fa-solid fa-phone"></i> 0707 189 144</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">DỊCH VỤ</h4>
+                    <ul class="footer-links">
+                        <li><a href="gioithieu.html">Giới thiệu VKDBOOKSTORE</a></li>
+                        <li><a href="hethongnhasach.html">Hệ thống nhà sách</a></li>
+                        <li><a href="dieukhoan.html">Điều khoản sử dụng</a></li>
+                        <li><a href="chinhsachbaomat.html">Chính sách bảo mật</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">HỖ TRỢ</h4>
+                    <ul class="footer-links">
+                        <li><a href="huongdanmuahang.html">Hướng dẫn mua hàng</a></li>
+                        <li><a href="lienhe.html">Liên hệ hỗ trợ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">KẾT NỐI VỚI CHÚNG TÔI</h4>
+                    <div class="social-links">
+                        <a href="https://www.facebook.com/ctsvSTU" target="_blank" title="Facebook STU"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://www.youtube.com/c/ĐạihọcCôngNghệSàiGònSTU" target="_blank" title="Youtube STU"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/dhcnsg/" target="_blank" title="Instagram STU"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@dhcnsg" target="_blank" title="Tiktok STU"><i class="fa-brands fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="copyright-text">
+                    © 2025 VKDBookStore - Nền tảng kinh doanh sách trực tuyến uy tín. <br>
+                    Giấy chứng nhận Đăng ký Kinh doanh số 0304132047 do Sở Kế hoạch và Đầu tư Thành phố Hồ Chí Minh cấp.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/header-auth.js"></script>
+    <script src="../js/cart-badge.js"></script>
+    <script src="../js/main.js"></script>
+
+</body>
+</html>
