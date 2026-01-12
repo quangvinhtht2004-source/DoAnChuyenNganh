@@ -14,9 +14,10 @@ class ReviewController {
         // Kiểm tra xem có tham số sach_id trên URL không
         $sachId = isset($_GET['sach_id']) ? $_GET['sach_id'] : null;
 
-        // Câu query cơ bản: Join User để lấy tên người, Join Sach để lấy tên sách
+        // [CẬP NHẬT] Thêm u.Email vào câu SELECT để hỗ trợ tìm kiếm
         $sql = "SELECT r.*, 
                        IFNULL(u.HoTen, 'Người dùng ẩn danh') as HoTen,
+                       u.Email, 
                        IFNULL(s.TenSach, 'Sách đã xóa') as TenSach
                 FROM review r 
                 LEFT JOIN users u ON r.UserID = u.UserID 
@@ -24,16 +25,14 @@ class ReviewController {
         
         $params = [];
 
-        // NẾU có sachi_id (Client): Lọc theo sách và chỉ lấy review đã duyệt (TrangThai=1)
+        // NẾU có sach_id (Client): Lọc theo sách và chỉ lấy review đã duyệt (TrangThai=1)
         if ($sachId) {
             $sql .= " WHERE r.SachID = ? AND r.TrangThai = 1";
             $params[] = $sachId;
         } 
-        // NẾU KHÔNG có sach_id (Admin): Lấy tất cả (không cần WHERE SachID)
+        // NẾU KHÔNG có sach_id (Admin): Lấy tất cả
         else {
-            // Admin có thể muốn xem cả review bị ẩn, nên ta chỉ để WHERE 1=1 hoặc lọc theo ý bạn
-            // Ở đây mình lấy tất cả các review đang hiển thị (TrangThai=1). 
-            // Nếu bạn muốn Admin thấy cả review đã ẩn, hãy bỏ đoạn "WHERE r.TrangThai = 1" đi.
+            // Admin: Lấy review đang hiển thị (TrangThai=1)
             $sql .= " WHERE r.TrangThai = 1"; 
         }
 
@@ -43,7 +42,7 @@ class ReviewController {
         $stmt->execute($params);
         $reviews = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Tính toán thống kê (Chỉ cần thiết khi xem chi tiết sách, nhưng để đây cũng không sao)
+        // Tính toán thống kê
         $stats = [
             'total' => count($reviews),
             'avg' => 0,
@@ -99,7 +98,7 @@ class ReviewController {
         }
     }
 
-    // 3. Xóa đánh giá (Bổ sung cho khớp với api.php)
+    // 3. Xóa đánh giá
     public function delete() {
         $data = json_decode(file_get_contents("php://input"), true);
 
@@ -109,8 +108,6 @@ class ReviewController {
         }
 
         try {
-            // Xóa cứng (DELETE FROM) hoặc Xóa mềm (UPDATE TrangThai = 0)
-            // Ở đây mình làm xóa cứng theo yêu cầu cơ bản
             $sql = "DELETE FROM review WHERE ReviewID = ?";
             $stmt = $this->db->prepare($sql);
             $result = $stmt->execute([$data['ReviewID']]);
