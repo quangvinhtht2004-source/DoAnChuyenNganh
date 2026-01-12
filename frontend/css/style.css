@@ -749,43 +749,52 @@ button {
 }
 
 /* =========================================
-   4. HOME PAGE & LAYOUT
+   4. HOME PAGE & LAYOUT (CẬP NHẬT MỚI)
    ========================================= */
 
-/* Cấu hình Layout mặc định (Desktop) */
+/* Cấu hình Layout: Chỉ chứa Sidebar và Banner ngang hàng nhau */
 .main-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 20px;
+  margin-bottom: 40px;
+}
+.top-section {
   display: grid;
   grid-template-columns: 260px 1fr;
-  gap: 30px;
-  align-items: start;
-  margin-top: 30px;
+  gap: 25px;
+  align-items: stretch;
 }
 
-/* Sidebar Wrapper - CẬP NHẬT: Static để không chạy theo khi cuộn */
+/* Sidebar Wrapper */
 .sidebar-wrapper {
-  position: static !important;
-  top: auto !important;
   display: block;
 }
 
+
 .content-area {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
 }
-
-/* --- SIDEBAR FILTER STYLES MỚI (ACCORDION) --- */
+/* --- SIDEBAR FILTER STYLES (ACCORDION MỚI) --- */
 
 /* Khung bao ngoài của bộ lọc */
 .filter-box-custom {
+  height: 100%; /* Kéo giãn chiều cao bằng Banner bên cạnh */
   background: #fff;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
   border: 1px solid #eee;
+  border-radius: 12px; /* Bo góc trùng khớp với Banner */
+  overflow: hidden;
 }
 
-/* Tiêu đề BỘ LỌC màu xanh Navy */
+/* Tiêu đề BỘ LỌC */
 .filter-header-custom {
-  background-color: #102A56;
+  background-color: #102A56; /* Xanh Navy */
   color: #ffffff;
   padding: 15px 20px;
   font-weight: 700;
@@ -798,7 +807,10 @@ button {
 
 /* Nhóm chứa các nút Accordion */
 .accordion-group {
+  flex: 1; /* Tự động giãn để lấp đầy khoảng trắng nếu Banner cao hơn */
   background: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Nút bấm Accordion */
@@ -830,10 +842,10 @@ button {
 .accordion-btn.active {
   background-color: #fff;
   color: var(--accent-color);
-  border-bottom: none;
+  border-bottom: none; /* Bỏ viền dưới để liền mạch với nội dung */
 }
 
-/* Icon mũi tên trong nút Accordion */
+/* Icon mũi tên */
 .accordion-btn .arrow-icon {
   font-size: 12px;
   color: #999;
@@ -846,24 +858,24 @@ button {
   color: var(--accent-color);
 }
 
-/* Nội dung bên trong Accordion (Danh sách) */
+/* Nội dung bên trong Accordion */
 .accordion-content {
-  display: none;
+  display: none; /* Mặc định ẩn */
   background-color: white;
   overflow: hidden;
   border-bottom: 1px solid #f0f0f0;
 }
 
-/* Danh sách link bên trong nội dung */
+/* Danh sách link bên trong */
 .accordion-content .filter-list {
   padding: 5px 0;
-  max-height: 250px;
+  max-height: 250px; /* Giới hạn chiều cao nếu danh sách quá dài */
   overflow-y: auto;
   list-style: none;
   margin: 0;
 }
 
-/* Thanh cuộn cho danh sách */
+/* Thanh cuộn nhỏ đẹp hơn */
 .accordion-content .filter-list::-webkit-scrollbar {
   width: 4px;
 }
@@ -873,9 +885,9 @@ button {
   border-radius: 4px;
 }
 
-/* Link từng mục trong bộ lọc */
+/* Link từng mục */
 .accordion-content .filter-list li a {
-  padding: 8px 20px 8px 35px;
+  padding: 8px 20px 8px 35px; /* Thụt đầu dòng */
   display: block;
   color: #555;
   font-size: 13px;
@@ -883,25 +895,25 @@ button {
   text-decoration: none;
 }
 
-/* Hiệu ứng hover link */
 .accordion-content .filter-list li a:hover {
   color: var(--accent-color);
   background: #fff5f0;
 }
 
-/* --- Hero Banner (Slider) --- */
+/* --- HERO BANNER (CẬP NHẬT CHIỀU CAO) --- */
 .hero-modern {
   background: url('../img/kesach.jpg') no-repeat center center / cover;
   border-radius: 12px;
   padding: 40px 50px;
   position: relative;
   color: white;
-  min-height: 320px;
+  height: 100%; /* CẬP NHẬT: Chiếm trọn chiều cao để bằng Sidebar */
+  min-height: 400px; 
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
-  margin-bottom: 30px;
+  margin-bottom: 0 !important; /* Bỏ margin bottom để khớp layout */
 }
 
 .hero-modern::before {
@@ -954,7 +966,7 @@ button {
   align-items: center;
   text-align: center;
   justify-content: center;
-  margin-bottom: 40px;
+  margin-bottom: 25px !important;
   position: relative;
 }
 
@@ -1023,6 +1035,8 @@ button {
 /* =========================================
    5. PRODUCT CARDS & GRID
    ========================================= */
+
+/* Grid mặc định cho layout Full Width (5 cột) */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -2956,27 +2970,37 @@ button {
 }
 
 /* =========================================
-   12. RESPONSIVE MEDIA QUERIES
+   12. RESPONSIVE MEDIA QUERIES (CẬP NHẬT)
    ========================================= */
 
-/* Large Screens */
+/* Large Screens (Dưới 1200px -> 4 cột) */
 @media (max-width: 1200px) {
   .product-grid {
     grid-template-columns: repeat(4, 1fr) !important;
   }
 }
 
-/* Tablets / Medium Screens (< 992px)
-   Đây là điểm gãy (breakpoint) nơi Sidebar sẽ ẩn đi và Layout trở về 1 cột */
+/* Tablets / Medium Screens (< 992px) */
 @media (max-width: 992px) {
   .main-layout {
-    grid-template-columns: 1fr; /* Trở về 1 cột */
-    display: block; /* Hoặc block */
+    display: block; /* Hủy grid layout chính */
+    margin-bottom: 20px;
   }
 
   /* Ẩn Sidebar trên Mobile/Tablet */
   .sidebar-wrapper {
     display: none;
+  }
+
+  .hero-modern {
+    min-height: 300px;
+    margin-bottom: 20px !important;
+    height: auto;
+  }
+
+  /* Grid sản phẩm còn 3 cột */
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 
   .footer-grid {
@@ -3031,7 +3055,7 @@ button {
   }
 }
 
-/* Small Tablets / Large Phones */
+/* Small Tablets / Large Phones (< 768px -> 2 cột) */
 @media (max-width: 768px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -3139,7 +3163,7 @@ button {
   }
 }
 
-/* Mobile Phones */
+/* Mobile Phones (< 576px) */
 @media (max-width: 576px) {
   .product-grid {
     grid-template-columns: repeat(2, 1fr) !important;
@@ -3179,6 +3203,7 @@ button {
   }
 }
 
+/* Small Mobile (< 480px -> 1 cột) */
 @media (max-width: 480px) {
   .product-grid {
     grid-template-columns: 1fr !important;

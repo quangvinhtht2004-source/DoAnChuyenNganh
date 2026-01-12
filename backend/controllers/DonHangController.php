@@ -59,7 +59,7 @@ class DonHangController {
         }
     }
 
-    // --- API: TẠO ĐƠN HÀNG ---
+    // --- API: TẠO ĐƠN HÀNG (ĐÃ SỬA LOGIC SHIP) ---
     public function create() {
         $data = json_decode(file_get_contents("php://input"), true);
         
@@ -79,7 +79,7 @@ class DonHangController {
             return;
         }
 
-        // 2. Tính tổng tiền tạm tính
+        // 2. Tính tổng tiền hàng (Tạm tính)
         $tamTinh = 0;
         foreach ($items as $item) {
             $tamTinh += $item['GiaBan'] * $item['SoLuong'];
@@ -114,18 +114,30 @@ class DonHangController {
             }
         }
         
-        $tongTien = $tamTinh - $giam;
+        // 4. Xử lý phí vận chuyển [MỚI]
+        // Mặc định là 30.000, nếu chọn STORE thì là 0
+        $phuongThuc = $data['PhuongThucTT'] ?? 'COD';
+        $phiShip = 30000; 
+
+        if ($phuongThuc === 'STORE') {
+            $phiShip = 0;
+        }
+
+        // Tổng tiền = (Tiền hàng - Giảm giá) + Phí ship
+        $tongTien = ($tamTinh - $giam) + $phiShip;
         if ($tongTien < 0) $tongTien = 0;
 
-        // 4. Chuẩn bị thông tin lưu DB
+        // 5. Chuẩn bị thông tin lưu DB
         $hoTenNguoiNhan = $data['HoTenNguoiNhan'] ?? 'Khách';
         $ghiChuKhach    = $data['GhiChu'] ?? '';
-        $ghiChuLuuDB    = "Người nhận: " . $hoTenNguoiNhan . ". Note: " . $ghiChuKhach;
+        
+        // Nếu nhận tại cửa hàng, ghi chú rõ trong DB để admin biết
+        $ghiChuHeThong = ($phuongThuc === 'STORE') ? "[NHẬN TẠI CỬA HÀNG] " : "";
+        $ghiChuLuuDB    = $ghiChuHeThong . "Người nhận: " . $hoTenNguoiNhan . ". Note: " . $ghiChuKhach;
 
         $diaChi         = $data['DiaChiGiao'] ?? '';
         $sdt            = $data['SoDienThoai'] ?? '';
-        $phuongThuc     = $data['PhuongThucTT'] ?? 'COD';
-
+        
         try {
             $this->db->beginTransaction();
 
@@ -161,7 +173,7 @@ class DonHangController {
     }
 
     // ============================================================
-    // CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (ĐÃ BỔ SUNG HOÀN KHO & HOÀN MÃ)
+    // CẬP NHẬT TRẠNG THÁI & LỊCH SỬ (GIỮ NGUYÊN)
     // ============================================================
     public function updateStatus() {
         $data = json_decode(file_get_contents("php://input"), true);
@@ -175,7 +187,6 @@ class DonHangController {
         }
 
         try {
-            // 1. Lấy trạng thái hiện tại VÀ KhuyenMaiID (Quan trọng)
             $stmtCheck = $this->db->prepare("SELECT TrangThai, KhuyenMaiID FROM DonHang WHERE DonHangID = ?");
             $stmtCheck->execute([$id]);
             $currentOrder = $stmtCheck->fetch(PDO::FETCH_ASSOC);
@@ -187,7 +198,6 @@ class DonHangController {
             
             $oldStatus = $currentOrder['TrangThai'];
 
-            // 2. Ràng buộc logic
             if ($oldStatus === 'HoanThanh') {
                 jsonResponse(false, "Đơn hàng đã hoàn thành, không thể thay đổi.");
                 return;
@@ -197,15 +207,12 @@ class DonHangController {
                 return;
             }
 
-            // --- LOGIC HỦY ĐƠN ---
             if ($newStatus === 'DaHuy') {
-                // Chỉ cho phép hủy khi đang chờ xác nhận
                 if ($oldStatus !== 'ChoXacNhan') {
                     jsonResponse(false, "Đơn hàng đang xử lý hoặc đang giao, không thể hủy lúc này!");
                     return;
                 }
 
-                // A. CỘNG LẠI SỐ LƯỢNG SÁCH VÀO KHO
                 $stmtItems = $this->db->prepare("SELECT SachID, SoLuong FROM ChiTietDonHang WHERE DonHangID = ?");
                 $stmtItems->execute([$id]);
                 $items = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
@@ -217,13 +224,11 @@ class DonHangController {
                     }
                 }
 
-                // B. [MỚI] HOÀN TRẢ SỐ LƯỢNG MÃ KHUYẾN MÃI (NẾU CÓ)
                 if (!empty($currentOrder['KhuyenMaiID'])) {
                     $this->kmModel->restoreQuantity($currentOrder['KhuyenMaiID']);
                 }
             }
 
-            // 3. Cập nhật trạng thái
             $stmt = $this->db->prepare("UPDATE DonHang SET TrangThai = ? WHERE DonHangID = ?");
             
             if ($stmt->execute([$newStatus, $id])) {
@@ -236,7 +241,6 @@ class DonHangController {
         }
     }
 
-    // --- API: Lấy lịch sử đơn hàng của 1 User ---
     public function history() {
         $userId = $_GET['userId'] ?? null;
 

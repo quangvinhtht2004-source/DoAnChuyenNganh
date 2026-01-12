@@ -481,7 +481,6 @@
         }
 
         function renderOrders(orders, container, currentUser) {
-            const STANDARD_SHIP_FEE = 30000; // Phí ship mặc định để fix lỗi DB
             let html = "";
             
             orders.forEach(order => {
@@ -493,13 +492,14 @@
                 const receiverName = order.NguoiNhan || order.HoTen || currentUser.HoTen || "Khách hàng";
                 const receiverPhone = order.SDT || order.SoDienThoai || currentUser.SoDienThoai || "";
                 
-                const safeName = receiverName.replace(/'/g, "\\'");
+                // Escape chuỗi để tránh lỗi JS khi truyền vào onclick
+                const safeName = (receiverName || "").replace(/'/g, "\\'");
                 const safeAddr = (order.DiaChiGiao || "").replace(/'/g, "\\'");
+                const method = order.PhuongThucTT || 'COD';
+                const voucherDisc = order.TienGiamVoucher || 0;
 
-                // --- FIX LOGIC TỔNG TIỀN HIỂN THỊ Ở DANH SÁCH ---
-                // Vì database lưu thiếu phí ship, ta tự động cộng thêm 30k vào số tiền hiển thị
-                // Để đảm bảo List View khớp với số tiền thực tế (386k thay vì 356k)
-                const displayTotal = parseInt(order.TongTien) + STANDARD_SHIP_FEE;
+                // Lấy tiền trực tiếp từ DB (Backend đã tính ship rồi)
+                const displayTotal = parseInt(order.TongTien);
 
                 html += `
                 <div class="order-card">
@@ -513,12 +513,12 @@
                     <div class="order-body">
                         <div class="order-info">
                             <p><i class="fa-solid fa-user"></i> <strong>Người nhận:</strong> ${receiverName} ${receiverPhone ? '- ' + receiverPhone : ''}</p>
-                            <p><i class="fa-solid fa-location-dot"></i> <strong>Địa chỉ:</strong> ${order.DiaChiGiao}</p>
-                            <p><i class="fa-solid fa-money-bill"></i> <strong>TT:</strong> ${order.PhuongThucTT}</p>
+                            <p><i class="fa-solid fa-location-dot"></i> <strong>Địa chỉ:</strong> ${order.DiaChiGiao || 'Nhận tại cửa hàng'}</p>
+                            <p><i class="fa-solid fa-money-bill"></i> <strong>TT:</strong> ${method === 'STORE' ? 'Thanh toán tại quầy' : method}</p>
                             <p><strong>Tổng tiền:</strong> <span class="total-price">${formatMoney(displayTotal)}</span></p>
                         </div>
                         <div class="order-actions">
-                            <button class="btn-detail" onclick="viewDetail(${order.DonHangID}, ${displayTotal}, '${safeName}', '${receiverPhone}', '${safeAddr}')">Xem Chi Tiết</button>
+                            <button class="btn-detail" onclick="viewDetail(${order.DonHangID}, ${displayTotal}, '${safeName}', '${receiverPhone}', '${safeAddr}', '${method}', ${voucherDisc})">Xem Chi Tiết</button>
                             ${isCancellable ? `<button class="btn-cancel" onclick="cancelOrder(${order.DonHangID})">Hủy Đơn</button>` : ''}
                         </div>
                     </div>
@@ -550,8 +550,8 @@
             }
         }
 
-        // --- HÀM XEM CHI TIẾT (ĐÃ FIX LOGIC SHIP) ---
-        async function viewDetail(orderId, finalTotal, name, phone, address) {
+        // --- HÀM XEM CHI TIẾT (ĐÃ CẬP NHẬT) ---
+        async function viewDetail(orderId, finalTotal, name, phone, address, paymentMethod, voucherDiscount) {
             const modal = document.getElementById("orderDetailModal");
             const modalBody = document.getElementById("modalBody");
             
@@ -587,36 +587,35 @@
                         </div>`;
                     });
 
-                    // --- LOGIC TÍNH TOÁN SHIP HOẶC GIẢM GIÁ ---
-                    // finalTotal nhận vào là ĐÃ CỘNG 30K từ renderOrders
-                    // itemTotal là tổng tiền hàng thuần túy
+                    // --- LOGIC HIỂN THỊ TIỀN (Chính xác theo DB) ---
+                    let shipRow = "";
                     
-                    let extraRowHtml = '';
-                    
-                    if (finalTotal > itemTotal) {
-                        const shipFee = finalTotal - itemTotal; // Sẽ ra ~30000
-                        extraRowHtml = `
+                    if (paymentMethod === 'STORE') {
+                        shipRow = `
                         <div class="sum-row">
                             <span>Phí vận chuyển:</span>
-                            <span>${formatMoney(shipFee)}</span>
-                        </div>`;
-                    } 
-                    else if (finalTotal < itemTotal) {
-                        const discount = itemTotal - finalTotal;
-                        extraRowHtml = `
-                        <div class="sum-row">
-                            <span>Phí vận chuyển:</span>
-                            <span>Miễn phí</span>
-                        </div>
-                        <div class="sum-row" style="color: #28a745; font-weight:600;">
-                            <span><i class="fa-solid fa-ticket"></i> Voucher / Giảm giá:</span>
-                            <span>- ${formatMoney(discount)}</span>
+                            <span>0đ (Nhận tại cửa hàng)</span>
                         </div>`;
                     } else {
-                        extraRowHtml = `
+                        // Tính ngược phí ship: Tổng cuối - (Tiền hàng - Voucher)
+                        // Nếu dương thì là tiền ship.
+                        // Lưu ý: Đôi khi logic làm tròn số có thể lệch 1 vài đồng, nhưng thường 30k là cố định.
+                        const calculatedShip = finalTotal - (itemTotal - voucherDiscount);
+                        const displayShip = calculatedShip > 0 ? formatMoney(calculatedShip) : "Miễn phí";
+
+                        shipRow = `
                         <div class="sum-row">
                             <span>Phí vận chuyển:</span>
-                            <span>Miễn phí</span>
+                            <span>${displayShip}</span>
+                        </div>`;
+                    }
+                    
+                    let voucherRow = "";
+                    if (voucherDiscount > 0) {
+                        voucherRow = `
+                        <div class="sum-row" style="color: #28a745; font-weight:600;">
+                            <span><i class="fa-solid fa-ticket"></i> Voucher giảm giá:</span>
+                            <span>- ${formatMoney(voucherDiscount)}</span>
                         </div>`;
                     }
 
@@ -625,7 +624,8 @@
                         <h4><i class="fa-solid fa-address-card"></i> Thông tin nhận hàng</h4>
                         <div class="info-line"><strong>Người nhận:</strong> <span>${name}</span></div>
                         <div class="info-line"><strong>Số điện thoại:</strong> <span>${phone}</span></div>
-                        <div class="info-line"><strong>Địa chỉ:</strong> <span>${address}</span></div>
+                        <div class="info-line"><strong>Địa chỉ:</strong> <span>${paymentMethod === 'STORE' ? 'Nhận tại cửa hàng' : address}</span></div>
+                        <div class="info-line"><strong>Thanh toán:</strong> <span>${paymentMethod}</span></div>
                     </div>
 
                     <div style="margin-bottom:10px; font-weight:700; color:#555; font-size:14px; text-transform:uppercase;">Danh sách sản phẩm</div>
@@ -636,7 +636,8 @@
                             <span>Tổng tiền hàng (${items.length} sản phẩm):</span>
                             <span>${formatMoney(itemTotal)}</span>
                         </div>
-                        ${extraRowHtml}
+                        ${voucherRow}
+                        ${shipRow}
                         <div class="sum-row final">
                             <span>TỔNG THANH TOÁN:</span>
                             <span>${formatMoney(finalTotal)}</span>

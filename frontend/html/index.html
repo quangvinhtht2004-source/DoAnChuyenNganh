@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
-    
-    
 </head>
 
 <body>
@@ -20,7 +18,7 @@
                 <div class="top-left">
                     <span><i class="fa-solid fa-phone"></i> 0707 189 144</span>
                     <span><i class="fa-solid fa-envelope"></i> dh52201763@student.stu.edu.vn</span>
-                    <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
+                     <span><i class="fa-solid fa-location-dot"></i> 180 Cao Lỗ, P.4, Q.8, TP.HCM</span>
                 </div>
 
                 <div class="top-right">
@@ -138,65 +136,66 @@
     </nav>
 
     <main class="container">
-        <div class="main-layout">
-            
-            <div class="sidebar-wrapper">
-    <div class="filter-box-custom">
-        <div class="filter-header-custom">
-            <i class="fa-solid fa-filter"></i> BỘ LỌC
-        </div>
         
-        <div class="accordion-group">
-            
-            <button class="accordion-btn" onclick="toggleFilter(this)">
-                <span><i class="fa-solid fa-list"></i> Thể Loại</span>
-                <i class="fa-solid fa-chevron-down arrow-icon"></i>
-            </button>
-            <div class="accordion-content">
-                <ul class="filter-list" id="sidebarCategory">
-                    <li style="padding:10px; color:#999;">Đang tải...</li>
-                </ul>
-            </div>
+        <div class="main-layout">
+            <!-- Phần trên: Sidebar + Banner ngang hàng -->
+            <div class="top-section">
+                <div class="sidebar-wrapper">
+                    <div class="filter-box-custom">
+                        <div class="filter-header-custom">
+                            <i class="fa-solid fa-filter"></i> Bộ LỌC
+                        </div>
+                        
+                        <div class="accordion-group">
+                            
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-list"></i> Thể Loại</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarCategory">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
 
-            <button class="accordion-btn" onclick="toggleFilter(this)">
-                <span><i class="fa-solid fa-pen-nib"></i> Tác Giả</span>
-                <i class="fa-solid fa-chevron-down arrow-icon"></i>
-            </button>
-            <div class="accordion-content">
-                <ul class="filter-list" id="sidebarAuthor">
-                    <li style="padding:10px; color:#999;">Đang tải...</li>
-                </ul>
-            </div>
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-pen-nib"></i> Tác Giả</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarAuthor">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
 
-            <button class="accordion-btn" onclick="toggleFilter(this)">
-                <span><i class="fa-solid fa-building"></i> Nhà Xuất Bản</span>
-                <i class="fa-solid fa-chevron-down arrow-icon"></i>
-            </button>
-            <div class="accordion-content">
-                <ul class="filter-list" id="sidebarPublisher">
-                    <li style="padding:10px; color:#999;">Đang tải...</li>
-                </ul>
-            </div>
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-building"></i> Nhà Xuất Bản</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list" id="sidebarPublisher">
+                                    <li style="padding:10px; color:#999;">Đang tải...</li>
+                                </ul>
+                            </div>
 
-            <button class="accordion-btn" onclick="toggleFilter(this)">
-                <span><i class="fa-solid fa-money-bill-wave"></i> Mức Giá</span>
-                <i class="fa-solid fa-chevron-down arrow-icon"></i>
-            </button>
-            <div class="accordion-content">
-                <ul class="filter-list">
-                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '0-50000')">Dưới 50.000đ</a></li>
-                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '50000-100000')">50.000đ - 100.000đ</a></li>
-                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '100000-200000')">100.000đ - 200.000đ</a></li>
-                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '200000-300000')">200.000đ - 300.000đ</a></li>
-                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '300000-max')">Trên 300.000đ</a></li>
-                </ul>
-            </div>
+                            <button class="accordion-btn" onclick="toggleFilter(this)">
+                                <span><i class="fa-solid fa-money-bill-wave"></i> Mức Giá</span>
+                                <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                            </button>
+                            <div class="accordion-content">
+                                <ul class="filter-list">
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '0-50000')">Dưới 50.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '50000-100000')">50.000đ - 100.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '100000-200000')">100.000đ - 200.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '200000-300000')">200.000đ - 300.000đ</a></li>
+                                    <li><a href="javascript:void(0)" onclick="quickFilter('price', '300000-max')">Trên 300.000đ</a></li>
+                                </ul>
+                            </div>
 
-        </div>
-    </div>
-</div>
-            <div class="content-area">
-
+                        </div>
+                    </div>
+                </div>
+                
                 <section class="hero-modern">
                     <div class="hero-modern-content">
                         <h1 class="hero-title-big">VKDBOOKSTORE <br> <span>2025</span></h1>
@@ -205,6 +204,10 @@
                         </p>
                     </div>
                 </section>
+            </div>
+            
+            <!-- Phần dưới: Nội dung sách full width -->
+            <div class="content-area">
 
                 <section class="book-section" id="searchResultSection" style="display: none;">
                     <div class="section-header-line">
