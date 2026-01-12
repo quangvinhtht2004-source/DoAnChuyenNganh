@@ -1,6 +1,4 @@
 <?php
-// backend/controllers/AuthController.php
-
 require_once __DIR__ . "/../config/Database.php";
 require_once __DIR__ . "/../models/User.php"; 
 require_once __DIR__ . "/../helper/response.php";
@@ -44,17 +42,17 @@ class AuthController {
 
         $otp = rand(100000, 999999);
 
-        // Lưu Session
+
         $_SESSION['otp_code'] = strval($otp);
         $_SESSION['otp_email'] = $email;
         $_SESSION['otp_time'] = time();
-        session_write_close(); // Lưu session xuống file ngay lập tức
+        session_write_close(); /
 
         $subject = "Mã xác thực đăng ký VKD BookStore";
         $body = "<h2>VKD BookStore</h2><p>Mã OTP của bạn là: <b style='color:red; font-size:20px;'>$otp</b></p><p>Mã có hiệu lực 2 phút.</p>";
 
         if (SendMail::send($email, $subject, $body)) {
-            session_start(); // Mở lại session để xử lý request tiếp theo
+            session_start(); 
             jsonResponse(true, "Mã OTP đã gửi! Kiểm tra email.");
         } else {
             jsonResponse(false, "Lỗi gửi mail.");
@@ -67,7 +65,6 @@ class AuthController {
         $userOtp = isset($data['otp']) ? strval($data['otp']) : '';
         $email = $data['Email'] ?? '';
 
-        // Kiểm tra Session
         if (!isset($_SESSION['otp_code'])) {
             jsonResponse(false, "Vui lòng lấy mã OTP trước khi đăng ký.");
             return;
@@ -174,7 +171,7 @@ class AuthController {
         $_SESSION['reset_otp_code'] = strval($otp);
         $_SESSION['reset_email'] = $email;
         $_SESSION['reset_time'] = time();
-        session_write_close(); // [QUAN TRỌNG] Lưu session ngay
+        session_write_close(); 
 
         $subject = "Mã xác thực Đặt lại mật khẩu - VKD BookStore";
         $body = "<h2>VKD BookStore</h2>
@@ -183,7 +180,7 @@ class AuthController {
                  <p>Mã có hiệu lực 5 phút.</p>";
 
         if (SendMail::send($email, $subject, $body)) {
-            session_start(); // [QUAN TRỌNG] Mở lại session
+            session_start(); 
             jsonResponse(true, "Mã OTP đã gửi đến email của bạn.");
         } else {
             jsonResponse(false, "Lỗi gửi mail: Không thể gửi OTP.");
@@ -201,14 +198,14 @@ class AuthController {
 
         // 2. Kiểm tra thời gian (2 phút)
         if (time() - $_SESSION['reset_time'] > 120) {
-            unset($_SESSION['reset_otp_code']); // Xóa session
+            unset($_SESSION['reset_otp_code']); 
             jsonResponse(false, "Mã OTP đã hết hạn. Vui lòng lấy lại.");
             return;
         }
 
         // 3. So sánh OTP
         if ($otp == $_SESSION['reset_otp_code']) {
-            // [QUAN TRỌNG] Đánh dấu là đã xác thực thành công trong Session
+           
             $_SESSION['otp_verified'] = true; 
             jsonResponse(true, "OTP chính xác! Chuyển hướng...");
         } else {
@@ -221,7 +218,7 @@ class AuthController {
        $data = json_decode(file_get_contents("php://input"), true);
         $newPass = $data['MatKhauMoi'] ?? '';
         
-        // 1. Kiểm tra xem đã xác thực OTP ở bước trước chưa?
+        
         if (!isset($_SESSION['otp_verified']) || $_SESSION['otp_verified'] !== true) {
             jsonResponse(false, "Bạn chưa xác thực OTP. Vui lòng làm lại từ đầu.");
             return;
@@ -238,7 +235,6 @@ class AuthController {
         $hashedPass = password_hash($newPass, PASSWORD_DEFAULT);
 
         if ($this->userModel->updatePasswordByEmail($email, $hashedPass)) {
-            // Dọn dẹp sạch Session
             session_destroy(); 
             jsonResponse(true, "Đổi mật khẩu thành công!");
         } else {
